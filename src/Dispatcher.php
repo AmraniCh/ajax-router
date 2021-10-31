@@ -51,9 +51,9 @@ class Dispatcher
     /**
      * Dispatcher Constructor.
      *
-     * @param array  $server
-     * @param string $handlerName
-     * @param array  $handlers
+     * @param array  $server      The server variables.
+     * @param string $handlerName The handler name to be executed.
+     * @param array  $handlers    An associative array that register request handlers.
      */
     public function __construct(array $server, string $handlerName, array $handlers)
     {
@@ -64,7 +64,7 @@ class Dispatcher
 
     /**
      * Start dispatching the current AJAX request to the appropriate
-     * handler (controller method or a callback).
+     * handler (controller method or a callback function).
      *
      * @return void
      * @throws \Throwable
@@ -87,8 +87,8 @@ class Dispatcher
             }
         }
 
-        if (!array_key_exists($this->key, $this->context)) {
-            throw new AjaxDispatcherException("the key '$this->key' not found in request variables.");
+        if (!array_key_exists($this->handlerName, $this->context)) {
+            throw new DispatcherException("the key '$this->handlerName' not found in request variables.");
         }
 
         $this->handle();
@@ -97,10 +97,11 @@ class Dispatcher
     /**
      * Register controllers instances and namespaces.
      *
-     * @param array $controllers
-     * @return AjaxDispatcher
+     * @param array $controllers An array of controller instances or namespaces.
+     *
+     * @return Dispatcher
      */
-    public function registerControllers(array $controllers): AjaxDispatcher
+    public function registerControllers(array $controllers): Dispatcher
     {
         foreach ($controllers as $controller) {
             if (is_string($controller)) {
@@ -116,10 +117,12 @@ class Dispatcher
     /**
      * Executes some code before dispatching the current request.
      *
-     * @param callable $callback
-     * @return AjaxDispatcher
+     * @param callable $callback The callback function to be executed, all the request parameters will be passed to
+     *                           this callback as a first argument.
+     *
+     * @return Dispatcher
      */
-    public function before(callable $callback): AjaxDispatcher
+    public function before(callable $callback): Dispatcher
     {
         $this->beforeCallback = $callback;
         return $this;
@@ -128,10 +131,11 @@ class Dispatcher
     /**
      * Handle exceptions that may occur during the flow of the current AJAX request.
      *
-     * @param callable $callback
-     * @return AjaxDispatcher
+     * @param callable $callback a callback function that will accept the exception as a first argument.
+     *
+     * @return Dispatcher
      */
-    public function onException(callable $callback): AjaxDispatcher
+    public function onException(callable $callback): Dispatcher
     {
         $this->onExceptionCallback = $callback;
         return $this;
@@ -143,19 +147,19 @@ class Dispatcher
      * the XMLHTTPRequest in the client side.
      *
      * @return void
-     * @throws AjaxDispatcherException
+     * @throws DispatcherException
      */
     protected function checkScriptContext(): void
     {
         if (!function_exists('getallheaders')) {
-            throw new AjaxDispatcherException('AjaxDispatcher works only within an HTTP request context '
+            throw new DispatcherException('Dispatcher works only within an HTTP request context '
                 . '(request that issued by a HTTP client like a browser).');
         }
 
         $headers = getallheaders();
 
         if ($headers === false) {
-            throw new AjaxDispatcherException(sprintf(
+            throw new DispatcherException(sprintf(
                 'An error occur when trying retrieving the current HTTP request headers : %s',
                 error_get_last()['message']
             ));
@@ -163,7 +167,7 @@ class Dispatcher
 
         if (array_key_exists('X-Requested-With', $headers)
             && $headers['X-Requested-With'] === 'XMLHttpRequest') {
-            throw new AjaxDispatcherException('AjaxDispatcher Accept only an AJAX requests.');
+            throw new DispatcherException('Dispatcher Accept only an AJAX requests.');
         }
     }
 
@@ -171,14 +175,15 @@ class Dispatcher
      * Validate the giving handlers array.
      *
      * @param array $handlers
+     *
      * @return void
-     * @throws AjaxDispatcherException
+     * @throws DispatcherException
      */
     protected function validateHandlers(array $handlers): void
     {
         foreach ($handlers as $method => $_handlers) {
             if (!in_array($method, $this->HTTPMethods)) {
-                throw new AjaxDispatcherException("$method is not supported HTTP request method.");
+                throw new DispatcherException("$method is not supported HTTP request method.");
             }
 
             foreach ($_handlers as $name => $handler) {
@@ -187,19 +192,19 @@ class Dispatcher
                     continue;
                 }
 
-                throw new AjaxDispatcherException("the type of '$name' handler value must be either a"
+                throw new DispatcherException("the type of '$name' handler value must be either a"
                     . " string/array/callable.");
             }
         }
     }
 
     /**
-     * @throws AjaxDispatcherException
+     * @throws DispatcherException
      */
     protected function handle()
     {
         foreach ($this->handlers[$this->requestMethod] as $name => $handler) {
-            if ($name !== $this->context[$this->key]) {
+            if ($name !== $this->context[$this->handlerName]) {
                 continue;
             }
 
@@ -219,13 +224,14 @@ class Dispatcher
             }
         }
 
-        throw new AjaxDispatcherException('No handler was found for this AJAX request.');
+        throw new DispatcherException('No handler was found for this AJAX request.');
     }
 
     /**
      * Handles handlers that defined as a string.
      *
      * @param string $string
+     *
      * @return mixed
      */
     protected function handleString(string $string)
@@ -237,6 +243,7 @@ class Dispatcher
      * Handles handlers that defined as an array.
      *
      * @param array $array
+     *
      * @return mixed
      */
     protected function handleArray(array $array)
@@ -245,7 +252,7 @@ class Dispatcher
 
         foreach (array_splice($array, 1) as $arg) {
             if (!array_key_exists($arg, $this->context)) {
-                throw new AjaxDispatcherException("$arg is not exist in the request variables.");
+                throw new DispatcherException("$arg is not exist in the request variables.");
             }
             $args[] = $this->context[$arg];
         }
@@ -257,12 +264,13 @@ class Dispatcher
      * Handles handlers that defined as a callback functions.
      *
      * @param callable $callback
+     *
      * @return mixed
      */
     protected function handleCallback($callback)
     {
         $this->handleException(function () use ($callback) {
-            $params = array_splice($this->context, 1);
+            $params  = array_splice($this->context, 1);
             $indexed = array_values($params);
             return call_user_func($callback, ...$indexed);
         });
@@ -274,8 +282,9 @@ class Dispatcher
      * method from the controller object.
      *
      * @param string $string
+     *
      * @return callable
-     * @throws AjaxDispatcherException
+     * @throws DispatcherException
      */
     protected function getCallableMethod(string $string)
     {
@@ -285,11 +294,11 @@ class Dispatcher
         $methodName     = $tokens[1];
 
         if (!$controller = $this->getControllerByName(($controllerName))) {
-            throw new AjaxDispatcherException("Controller class '$controllerName' not found.");
+            throw new DispatcherException("Controller class '$controllerName' not found.");
         }
 
         if (!method_exists($controller, $methodName)) {
-            throw new AjaxDispatcherException("Controller method '$methodName' not exist in"
+            throw new DispatcherException("Controller method '$methodName' not exist in"
                 . " controller '$controllerName'.");
         }
 
@@ -304,6 +313,7 @@ class Dispatcher
      * Get a controller instance from the registered controllers by its name.
      *
      * @param string $name
+     *
      * @return string|false
      */
     protected function getControllerByName(string $name)
@@ -322,6 +332,7 @@ class Dispatcher
      * Gets the current request variables.
      *
      * @param string $requestMethod
+     *
      * @return array
      */
     protected function getRequestVariables(string $requestMethod): array
@@ -342,7 +353,7 @@ class Dispatcher
                 break;
 
             default:
-                throw new AjaxDispatcherException("Unknown HTTP request method '$requestMethod'.");
+                throw new DispatcherException("Unknown HTTP request method '$requestMethod'.");
         }
     }
 
@@ -350,6 +361,7 @@ class Dispatcher
      * handle exceptions that may throw during the callback call.
      *
      * @param callable $callback
+     *
      * @return mixed
      * @throws \Throwable
      */
