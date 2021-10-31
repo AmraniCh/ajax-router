@@ -32,7 +32,7 @@ class AjaxDispatcher
     ];
 
     /** @var string */
-    protected string $key;
+    protected string $handlerName;
 
     /** @var string */
     protected string $requestMethod;
@@ -40,15 +40,15 @@ class AjaxDispatcher
     /**
      * AjaxDispatcher Constructor.
      *
-     * @param array $server
-     * @param string $key
-     * @param array $handlers
+     * @param array  $server
+     * @param string $handlerName
+     * @param array  $handlers
      */
-    public function __construct(array $server, string $key, array $handlers)
+    public function __construct(array $server, string $handlerName, array $handlers)
     {
-        $this->server   = $server;
-        $this->key      = $key;
-        $this->handlers = $handlers;
+        $this->server      = $server;
+        $this->handlerName = $handlerName;
+        $this->handlers    = $handlers;
     }
 
     /**
