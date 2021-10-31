@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 require_once __DIR__ . '/PostsController.php';
 
 use AmraniCh\AjaxDispatcher\Dispatcher;
@@ -8,7 +10,7 @@ use PHPUnit\Framework\TestCase;
 
 class DispatcherTest extends TestCase
 {
-    public function test_dispatch_With_Non_Exist_Key()
+    public function test_dispatch_With_Non_Exist_Key() : void
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
@@ -34,7 +36,7 @@ class DispatcherTest extends TestCase
         $dispatcher->dispatch();
     }
 
-    public function test_dispatch_With_Invalid_HTTP_Request_Method()
+    public function test_dispatch_With_Invalid_HTTP_Request_Method() : void
     {
         $server = ['REQUEST_METHOD' => 'ADD'];
 
@@ -55,7 +57,7 @@ class DispatcherTest extends TestCase
         $dispatcher->dispatch();
     }
 
-    public function test_dispatch_With_Invalid_Handler_Type()
+    public function test_dispatch_With_Invalid_Handler_Type() : void
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
@@ -76,7 +78,7 @@ class DispatcherTest extends TestCase
         $dispatcher->dispatch();
     }
 
-    public function test_dispatch_Where_Handler()
+    public function test_dispatch_Where_Handler() : void
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
@@ -102,7 +104,7 @@ class DispatcherTest extends TestCase
         $dispatcher->dispatch();
     }
 
-    public function test_dispatch_With_Before_Returns_False()
+    public function test_dispatch_With_Before_Returns_False() : void
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
@@ -136,7 +138,7 @@ class DispatcherTest extends TestCase
         $dispatcher->dispatch();
     }
 
-    public function test_dispatch_Success_With_String_Handler_Type()
+    public function test_dispatch_Success_With_String_Handler_Type() : void
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
@@ -165,7 +167,7 @@ class DispatcherTest extends TestCase
         $dispatcher->dispatch();
     }
 
-    public function test_dispatch_Success_With_Array_Handler_Type()
+    public function test_dispatch_Success_With_Array_Handler_Type() : void
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
@@ -197,7 +199,7 @@ class DispatcherTest extends TestCase
         $dispatcher->dispatch();
     }
 
-    public function test_dispatch_Success_With_Callback_Handler_Type()
+    public function test_dispatch_Success_With_Callback_Handler_Type() : void
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
@@ -232,7 +234,7 @@ class DispatcherTest extends TestCase
         $dispatcher->dispatch();
     }
 
-    public function test_dispatch_With_Self_Controller_Instances()
+    public function test_dispatch_With_Self_Controller_Instances() : void
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
@@ -261,7 +263,7 @@ class DispatcherTest extends TestCase
         $dispatcher->dispatch();
     }
 
-    public function test_dispatch_With_Before()
+    public function test_dispatch_With_Before() : void
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
@@ -296,7 +298,7 @@ class DispatcherTest extends TestCase
         $dispatcher->dispatch();
     }
 
-    public function test_dispatch_With_OnException()
+    public function test_dispatch_With_OnException() : void
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
@@ -335,7 +337,7 @@ class DispatcherTest extends TestCase
         $dispatcher->dispatch();
     }
 
-    public function test_dispatch_With_String_Handler_Type_With_Non_Exists_Controller()
+    public function test_dispatch_With_String_Handler_Type_With_Non_Exists_Controller() : void
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
@@ -363,7 +365,7 @@ class DispatcherTest extends TestCase
         $dispatcher->dispatch();
     }
 
-    public function test_dispatch_With_String_Handler_Type_With_Non_Exists_Controller_Method()
+    public function test_dispatch_With_String_Handler_Type_With_Non_Exists_Controller_Method() : void
     {
         $server = ['REQUEST_METHOD' => 'POST'];
 

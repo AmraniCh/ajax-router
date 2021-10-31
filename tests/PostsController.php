@@ -1,8 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
+/**
+ * A fake controller for testing.
+ */
 class PostsController {
 
-    public function getPosts()
+    public function getPosts() : string
     {
         return json_encode([[
                 'id' => 1,
@@ -12,7 +17,7 @@ class PostsController {
         ]);
     }
 
-    public function getPostsByID($id)
+    public function getPostsByID(int $id) : string
     {
         return json_encode([
             'id' => $id,
