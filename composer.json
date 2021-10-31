@@ -1,0 +1,23 @@
+{
+    "name": "amranich/ajax-dispatcher",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "El Amrani Chakir",
+            "email": "contact@amranich.dev"
+        }
+    ],
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-4": {
+            "AmraniCh\\": "src/"
+        }
+    },
+    "require-dev": {
+        "ext-json": "*",
+        "phpunit/phpunit": "^9",
+        "filp/whoops": "^2.14",
+        "symfony/var-dumper": "^5.3"
+    }
+}
