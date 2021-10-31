@@ -2,17 +2,17 @@
 
 require_once __DIR__ . '/PostsController.php';
 
-use AmraniCh\AjaxDispatcher;
-use AmraniCh\AjaxDispatcherException;
+use AmraniCh\AjaxDispatcher\Dispatcher;
+use AmraniCh\AjaxDispatcher\DispatcherException;
 use PHPUnit\Framework\TestCase;
 
-class AjaxDispatcherTest extends TestCase
+class DispatcherTest extends TestCase
 {
     public function test_dispatch_With_Non_Exist_Key()
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
-        $dispatcher = $this->getMockBuilder(AjaxDispatcher::class)
+        $dispatcher = $this->getMockBuilder(Dispatcher::class)
             ->setConstructorArgs([$server, 'key', [
                 'GET' => ['getPosts' => 'PostsController@getPosts']
             ]])
@@ -28,7 +28,7 @@ class AjaxDispatcherTest extends TestCase
             ->method('getRequestVariables')
             ->willReturn(['function' => 'getPosts']);
 
-        $this->expectException(AjaxDispatcherException::class);
+        $this->expectException(DispatcherException::class);
         $this->expectExceptionMessage("the key 'key' not found in request variables.");
 
         $dispatcher->dispatch();
@@ -38,7 +38,7 @@ class AjaxDispatcherTest extends TestCase
     {
         $server = ['REQUEST_METHOD' => 'ADD'];
 
-        $dispatcher = $this->getMockBuilder(AjaxDispatcher::class)
+        $dispatcher = $this->getMockBuilder(Dispatcher::class)
             ->setConstructorArgs([$server, 'function', [
                 'GET' => ['getPosts' => 'PostsController@getPosts']
             ]])
@@ -49,7 +49,7 @@ class AjaxDispatcherTest extends TestCase
             ->expects($this->once())
             ->method('checkScriptContext');
 
-        $this->expectException(AjaxDispatcherException::class);
+        $this->expectException(DispatcherException::class);
         $this->expectExceptionMessage("Unknown HTTP request method 'ADD'.");
 
         $dispatcher->dispatch();
@@ -59,7 +59,7 @@ class AjaxDispatcherTest extends TestCase
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
-        $dispatcher = $this->getMockBuilder(AjaxDispatcher::class)
+        $dispatcher = $this->getMockBuilder(Dispatcher::class)
             ->setConstructorArgs([$server, 'function', [
                 'GET' => ['getPosts' => 4096]
             ]])
@@ -70,7 +70,7 @@ class AjaxDispatcherTest extends TestCase
             ->expects($this->once())
             ->method('checkScriptContext');
 
-        $this->expectException(AjaxDispatcherException::class);
+        $this->expectException(DispatcherException::class);
         $this->expectExceptionMessage('the type of \'getPosts\' handler value must be either a string/array/callable.');
 
         $dispatcher->dispatch();
@@ -80,7 +80,7 @@ class AjaxDispatcherTest extends TestCase
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
-        $dispatcher = $this->getMockBuilder(AjaxDispatcher::class)
+        $dispatcher = $this->getMockBuilder(Dispatcher::class)
             ->setConstructorArgs([$server, 'function', [
                 'GET' => ['getComments' => 'PostsController@getPosts']
             ]])
@@ -96,7 +96,7 @@ class AjaxDispatcherTest extends TestCase
             ->method('getRequestVariables')
             ->willReturn(['function' => 'getPosts']);
 
-        $this->expectException(AjaxDispatcherException::class);
+        $this->expectException(DispatcherException::class);
         $this->expectExceptionMessage('No handler was found for this AJAX request.');
 
         $dispatcher->dispatch();
@@ -106,7 +106,7 @@ class AjaxDispatcherTest extends TestCase
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
-        $dispatcher = $this->getMockBuilder(AjaxDispatcher::class)
+        $dispatcher = $this->getMockBuilder(Dispatcher::class)
             ->setConstructorArgs([$server, 'function', [
                 'GET' => [
                     'getPosts' => 'PostsController@getPosts',
@@ -140,7 +140,7 @@ class AjaxDispatcherTest extends TestCase
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
-        $dispatcher = $this->getMockBuilder(AjaxDispatcher::class)
+        $dispatcher = $this->getMockBuilder(Dispatcher::class)
             ->setConstructorArgs([$server, 'function', [
                 'GET' => [
                     'getPosts' => 'PostsController@getPosts',
@@ -169,7 +169,7 @@ class AjaxDispatcherTest extends TestCase
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
-        $dispatcher = $this->getMockBuilder(AjaxDispatcher::class)
+        $dispatcher = $this->getMockBuilder(Dispatcher::class)
             ->setConstructorArgs([$server, 'function', [
                 'GET' => [
                     'getPostsByID' => ['PostsController@getPostsByID', 'id']
@@ -201,7 +201,7 @@ class AjaxDispatcherTest extends TestCase
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
-        $dispatcher = $this->getMockBuilder(AjaxDispatcher::class)
+        $dispatcher = $this->getMockBuilder(Dispatcher::class)
             ->setConstructorArgs([$server, 'function', [
                 'GET' => [
                     'getPostsByID' => function ($id, $title) {
@@ -236,7 +236,7 @@ class AjaxDispatcherTest extends TestCase
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
-        $dispatcher = $this->getMockBuilder(AjaxDispatcher::class)
+        $dispatcher = $this->getMockBuilder(Dispatcher::class)
             ->setConstructorArgs([$server, 'function', [
                 'GET' => [
                     'getPosts' => 'PostsController@getPosts',
@@ -265,7 +265,7 @@ class AjaxDispatcherTest extends TestCase
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
-        $dispatcher = $this->getMockBuilder(AjaxDispatcher::class)
+        $dispatcher = $this->getMockBuilder(Dispatcher::class)
             ->setConstructorArgs([$server, 'function', [
                 'GET' => [
                     'getPosts' => 'PostsController@getPosts',
@@ -300,7 +300,7 @@ class AjaxDispatcherTest extends TestCase
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
-        $dispatcher = $this->getMockBuilder(AjaxDispatcher::class)
+        $dispatcher = $this->getMockBuilder(Dispatcher::class)
             ->setConstructorArgs([$server, 'function', [
                 'GET' => [
                     'getPosts' => 'PostsController@getPosts',
@@ -339,7 +339,7 @@ class AjaxDispatcherTest extends TestCase
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
-        $dispatcher = $this->getMockBuilder(AjaxDispatcher::class)
+        $dispatcher = $this->getMockBuilder(Dispatcher::class)
             ->setConstructorArgs([$server, 'function', [
                 'GET' => [
                     'getPosts' => 'BlogsController@getPosts',
@@ -357,7 +357,7 @@ class AjaxDispatcherTest extends TestCase
             ->method('getRequestVariables')
             ->willReturn(['function' => 'getPosts']);
 
-        $this->expectException(AjaxDispatcherException::class);
+        $this->expectException(DispatcherException::class);
         $this->expectExceptionMessage("Controller class 'BlogsController' not found.");
 
         $dispatcher->dispatch();
@@ -367,7 +367,7 @@ class AjaxDispatcherTest extends TestCase
     {
         $server = ['REQUEST_METHOD' => 'POST'];
 
-        $dispatcher = $this->getMockBuilder(AjaxDispatcher::class)
+        $dispatcher = $this->getMockBuilder(Dispatcher::class)
             ->setConstructorArgs([$server, 'function', [
                 'POST' => [
                     'getPosts' => 'PostsController@getBlogs',
@@ -387,7 +387,7 @@ class AjaxDispatcherTest extends TestCase
 
         $dispatcher->registerControllers([PostsController::class]);
 
-        $this->expectException(AjaxDispatcherException::class);
+        $this->expectException(DispatcherException::class);
         $this->expectExceptionMessage("Controller method 'getBlogs' not exist in controller 'PostsController'.");
 
         $dispatcher->dispatch();

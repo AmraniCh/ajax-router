@@ -2,7 +2,18 @@
 
 namespace AmraniCh;
 
-class AjaxDispatcher
+namespace AmraniCh\AjaxDispatcher;
+
+/**
+ * AmraniCh\AjaxDispatcher\Dispatcher
+ *
+ * Handle AJAX requests and send them to an appropriate handler.
+ *
+ * @since 1.0
+ * @author El Amrani Chakir <contact@amranich.dev>
+ * @link https://amranich.dev
+ */
+class Dispatcher
 {
     /** @var array */
     protected array $server;
@@ -38,7 +49,7 @@ class AjaxDispatcher
     protected string $requestMethod;
 
     /**
-     * AjaxDispatcher Constructor.
+     * Dispatcher Constructor.
      *
      * @param array  $server
      * @param string $handlerName
