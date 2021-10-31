@@ -5,10 +5,13 @@ namespace AmraniCh;
 class AjaxDispatcher
 {
     /** @var array */
-    protected $handlers;
+    protected array $server;
 
     /** @var array */
-    protected $context;
+    protected array $handlers;
+
+    /** @var array */
+    protected array $context;
 
     /** @var callable */
     protected $beforeCallback;
@@ -17,27 +20,27 @@ class AjaxDispatcher
     protected $onExceptionCallback;
 
     /** @var array */
-    protected $controllers = [];
+    protected array $controllers = [];
 
     /** @var array */
-    protected $HTTPMethods
-        = [
-            'GET',
-            'POST',
-            'PUT',
-            'DELETE',
-            'PATCH'
-        ];
+    protected array $HTTPMethods = [
+        'GET',
+        'POST',
+        'PUT',
+        'DELETE',
+        'PATCH'
+    ];
 
     /** @var string */
-    protected $key;
+    protected string $key;
 
     /** @var string */
-    protected $requestMethod;
+    protected string $requestMethod;
 
     /**
      * AjaxDispatcher Constructor.
      *
+     * @param array $server
      * @param string $key
      * @param array $handlers
      */
@@ -222,7 +225,7 @@ class AjaxDispatcher
     /**
      * Handles handlers that defined as an array.
      *
-     * @param string $string
+     * @param array $array
      * @return mixed
      */
     protected function handleArray(array $array)
@@ -240,7 +243,7 @@ class AjaxDispatcher
     }
 
     /**
-     * Handles handlers that defined as a callabak functions.
+     * Handles handlers that defined as a callback functions.
      *
      * @param callable $callback
      * @return mixed
@@ -249,7 +252,8 @@ class AjaxDispatcher
     {
         $this->handleException(function () use ($callback) {
             $params = array_splice($this->context, 1);
-            return call_user_func($callback, ...$params);
+            $indexed = array_values($params);
+            return call_user_func($callback, ...$indexed);
         });
     }
 
@@ -259,7 +263,7 @@ class AjaxDispatcher
      * method from the controller object.
      *
      * @param string $string
-     * @return callable|false
+     * @return callable
      * @throws AjaxDispatcherException
      */
     protected function getCallableMethod(string $string)
