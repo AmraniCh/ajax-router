@@ -1,5 +1,13 @@
 {
     "name": "amranich/ajax-dispatcher",
+    "description": "Handle AJAX requests and send them to an appropriate handler",
+    "keywords": [
+        "dispatcher",
+        "router",
+        "ajax-dispatcher",
+        "dipatcher-route",
+        "ajax-request"
+    ],
     "type": "library",
     "license": "MIT",
     "authors": [
