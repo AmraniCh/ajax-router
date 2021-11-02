@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
 
 class DispatcherTest extends TestCase
 {
-    public function test_dispatch_With_Non_Exist_Key() : void
+    public function test_dispatch_With_Non_Exist_Key(): void
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
@@ -36,7 +36,7 @@ class DispatcherTest extends TestCase
         $dispatcher->dispatch();
     }
 
-    public function test_dispatch_With_Invalid_HTTP_Request_Method() : void
+    public function test_dispatch_With_Invalid_HTTP_Request_Method(): void
     {
         $server = ['REQUEST_METHOD' => 'ADD'];
 
@@ -52,12 +52,12 @@ class DispatcherTest extends TestCase
             ->method('checkScriptContext');
 
         $this->expectException(DispatcherException::class);
-        $this->expectExceptionMessage("Unknown HTTP request method 'ADD'.");
+        $this->expectExceptionMessage("HTTP request method 'ADD' not supported.");
 
         $dispatcher->dispatch();
     }
 
-    public function test_dispatch_With_Invalid_Handler_Type() : void
+    public function test_dispatch_With_Invalid_Handler_Type(): void
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
@@ -78,7 +78,7 @@ class DispatcherTest extends TestCase
         $dispatcher->dispatch();
     }
 
-    public function test_dispatch_Where_Handler() : void
+    public function test_dispatch_Where_Handler_Not_Specified(): void
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
@@ -104,7 +104,7 @@ class DispatcherTest extends TestCase
         $dispatcher->dispatch();
     }
 
-    public function test_dispatch_With_Before_Returns_False() : void
+    public function test_dispatch_With_Before_Returns_False(): void
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
@@ -129,7 +129,7 @@ class DispatcherTest extends TestCase
                 'token' => ''
             ]);
 
-        $dispatcher->before(function ($params) {
+        $dispatcher->before(function($params) {
             return $params->token === 'TOKEN';
         });
 
@@ -138,7 +138,7 @@ class DispatcherTest extends TestCase
         $dispatcher->dispatch();
     }
 
-    public function test_dispatch_Success_With_String_Handler_Type() : void
+    public function test_dispatch_Success_With_String_Handler_Type(): void
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
@@ -167,7 +167,7 @@ class DispatcherTest extends TestCase
         $dispatcher->dispatch();
     }
 
-    public function test_dispatch_Success_With_Array_Handler_Type() : void
+    public function test_dispatch_Success_With_Array_Handler_Type(): void
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
@@ -199,14 +199,14 @@ class DispatcherTest extends TestCase
         $dispatcher->dispatch();
     }
 
-    public function test_dispatch_Success_With_Callback_Handler_Type() : void
+    public function test_dispatch_Success_With_Callback_Handler_Type(): void
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
         $dispatcher = $this->getMockBuilder(Dispatcher::class)
             ->setConstructorArgs([$server, 'function', [
                 'GET' => [
-                    'getPostsByID' => function ($id, $title) {
+                    'getPostsByID' => function($id, $title) {
                         echo("searching for post with id equal to \"$id\" and the title is \"$title\"");
                     }
                 ]
@@ -234,7 +234,7 @@ class DispatcherTest extends TestCase
         $dispatcher->dispatch();
     }
 
-    public function test_dispatch_With_Self_Controller_Instances() : void
+    public function test_dispatch_With_Self_Controller_Instances(): void
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
@@ -263,7 +263,7 @@ class DispatcherTest extends TestCase
         $dispatcher->dispatch();
     }
 
-    public function test_dispatch_With_Before() : void
+    public function test_dispatch_With_Before(): void
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
@@ -286,7 +286,7 @@ class DispatcherTest extends TestCase
             ->willReturn(['function' => 'getPosts']);
 
 
-        $dispatcher->before(function ($params) {
+        $dispatcher->before(function($params) {
             if (!isset($params->token)) {
                 throw new Exception('Token required.');
             }
@@ -298,7 +298,7 @@ class DispatcherTest extends TestCase
         $dispatcher->dispatch();
     }
 
-    public function test_dispatch_With_OnException() : void
+    public function test_dispatch_With_OnException(): void
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
@@ -322,13 +322,13 @@ class DispatcherTest extends TestCase
 
         $dispatcher->registerControllers([new PostsController]);
 
-        $dispatcher->before(function ($params) {
+        $dispatcher->before(function($params) {
             if (!isset($params->token)) {
                 throw new Exception('Token required.');
             }
         });
 
-        $dispatcher->onException(function ($ex) {
+        $dispatcher->onException(function($ex) {
             echo json_encode(['error' => $ex->getMessage()]);
         });
 
@@ -337,7 +337,7 @@ class DispatcherTest extends TestCase
         $dispatcher->dispatch();
     }
 
-    public function test_dispatch_With_String_Handler_Type_With_Non_Exists_Controller() : void
+    public function test_dispatch_With_String_Handler_Type_With_Non_Exists_Controller(): void
     {
         $server = ['REQUEST_METHOD' => 'GET'];
 
@@ -365,7 +365,7 @@ class DispatcherTest extends TestCase
         $dispatcher->dispatch();
     }
 
-    public function test_dispatch_With_String_Handler_Type_With_Non_Exists_Controller_Method() : void
+    public function test_dispatch_With_String_Handler_Type_With_Non_Exists_Controller_Method(): void
     {
         $server = ['REQUEST_METHOD' => 'POST'];
 

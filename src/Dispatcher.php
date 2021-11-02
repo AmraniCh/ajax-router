@@ -7,9 +7,9 @@ namespace AmraniCh\AjaxDispatcher;
  *
  * Handle AJAX requests and send them to an appropriate handler.
  *
- * @since  1.0
+ * @since 1.0
  * @author El Amrani Chakir <contact@amranich.dev>
- * @link   https://amranich.dev
+ * @link https://amranich.dev
  */
 class Dispatcher
 {
@@ -37,7 +37,7 @@ class Dispatcher
         'POST',
         'PUT',
         'DELETE',
-        'PATCH'
+        'PATCH',
     ];
 
     /** @var string */
@@ -69,26 +69,30 @@ class Dispatcher
      */
     public function dispatch()
     {
-        $this->handleException(function () {
-            $this->checkScriptContext();
+        $this->checkScriptContext();
 
-            $this->validateHandlers($this->handlers);
+        $requestMethod = $this->server['REQUEST_METHOD'];
 
-            $this->requestMethod = $this->server['REQUEST_METHOD'];
+        $this->throwExceptionIfNotValidRequestMethod($requestMethod);
 
-            $this->context = $this->getRequestVariables($this->requestMethod);
+        $this->validateHandlers($this->handlers);
 
-            if (is_callable($this->beforeCallback)
-                && call_user_func($this->beforeCallback, (object)$this->context) === false) {
+        $this->requestMethod = $requestMethod;
+        $this->context       = $this->getRequestVariables($requestMethod);
+
+        if (is_callable($this->beforeCallback)) {
+            if ($this->handleException(function () {
+                    return call_user_func($this->beforeCallback, (object)$this->context);
+                }) === false) {
                 return;
             }
+        }
 
-            if (!array_key_exists($this->handlerName, $this->context)) {
-                throw new DispatcherException("the key '$this->handlerName' not found in request variables.");
-            }
+        if (!array_key_exists($this->handlerName, $this->context)) {
+            throw new DispatcherException("the key '$this->handlerName' not found in request variables.");
+        }
 
-            $this->handle();
-        });
+        $this->handle();
     }
 
     /**
@@ -162,9 +166,8 @@ class Dispatcher
             ));
         }
 
-        // TODO needs to be changed
-        if (array_key_exists('X-Requested-With', $headers)
-            && $headers['X-Requested-With'] !== 'XMLHttpRequest') {
+        if (!array_key_exists('X-Requested-With', $headers)
+            || $headers['X-Requested-With'] !== 'XMLHttpRequest') {
             throw new DispatcherException('AjaxDispatcher Accept only AJAX requests.');
         }
     }
@@ -180,13 +183,11 @@ class Dispatcher
     protected function validateHandlers($handlers)
     {
         foreach ($handlers as $method => $_handlers) {
-            if (!in_array($method, $this->HTTPMethods)) {
-                throw new DispatcherException("$method is not supported HTTP request method.");
-            }
+            $this->throwExceptionIfNotValidRequestMethod($method);
 
-            foreach ($_handlers as $name => $handler) {
-                $handlerkey = gettype($handler);
-                if (in_array($handlerkey, ['string', 'array']) || is_callable($handler)) {
+            foreach ($_handlers as $name => $value) {
+                $handlerkey = gettype($value);
+                if (in_array($handlerkey, ['string', 'array']) || is_callable($value)) {
                     continue;
                 }
 
@@ -205,24 +206,17 @@ class Dispatcher
      */
     protected function getRequestVariables($requestMethod)
     {
-        switch ($requestMethod) {
-            case 'GET':
-                return $_GET;
-                break;
-
-            case 'POST':
-                return $_POST;
-                break;
-
-            case 'PUT':
-            case 'DELETE':
-            case 'PATCH':
-                // TODO
-                break;
-
-            default:
-                throw new DispatcherException("Unknown HTTP request method '$requestMethod'.");
+        if ($requestMethod === 'GET') {
+            return $_GET;
         }
+
+        if (!$raw = file_get_contents("php://input")) {
+            throw new DispatcherException("Unable to read the raw data from the HTTP request.");
+        }
+
+        parse_str($raw, $params);
+
+        return $params;
     }
 
     /**
@@ -297,9 +291,11 @@ class Dispatcher
      */
     protected function handleCallback($callback)
     {
-        $params  = array_splice($this->context, 1);
-        $indexed = array_values($params);
-        return call_user_func($callback, ...$indexed);
+        return $this->handleException(function () use ($callback) {
+            $params  = array_splice($this->context, 1);
+            $indexed = array_values($params);
+            return call_user_func($callback, ...$indexed);
+        });
     }
 
     /**
@@ -329,7 +325,9 @@ class Dispatcher
         }
 
         return function ($args = []) use ($controller, $methodName) {
-            return call_user_func_array([$controller, $methodName], $args);
+            return $this->handleException(function () use ($controller, $methodName, $args) {
+                return call_user_func_array([$controller, $methodName], $args);
+            });
         };
     }
 
@@ -372,6 +370,19 @@ class Dispatcher
 
             $class = get_class($ex);
             throw new $class($ex->getMessage());
+        }
+    }
+
+    /**
+     * @param string $method
+     *
+     * @return void
+     * @throws DispatcherException
+     */
+    protected function throwExceptionIfNotValidRequestMethod($method)
+    {
+        if (!in_array($method, $this->HTTPMethods)) {
+            throw new DispatcherException("HTTP request method '$method' not supported.");
         }
     }
 }
