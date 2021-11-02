@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace AmraniCh\AjaxDispatcher;
 
 /**
@@ -9,20 +7,20 @@ namespace AmraniCh\AjaxDispatcher;
  *
  * Handle AJAX requests and send them to an appropriate handler.
  *
- * @since 1.0
+ * @since  1.0
  * @author El Amrani Chakir <contact@amranich.dev>
- * @link https://amranich.dev
+ * @link   https://amranich.dev
  */
 class Dispatcher
 {
     /** @var array */
-    protected array $server;
+    protected $server;
 
     /** @var array */
-    protected array $handlers;
+    protected $handlers;
 
     /** @var array */
-    protected array $context;
+    protected $context;
 
     /** @var callable */
     protected $beforeCallback;
@@ -31,10 +29,10 @@ class Dispatcher
     protected $onExceptionCallback;
 
     /** @var array */
-    protected array $controllers = [];
+    protected $controllers = [];
 
     /** @var array */
-    protected array $HTTPMethods = [
+    protected $HTTPMethods = [
         'GET',
         'POST',
         'PUT',
@@ -43,10 +41,10 @@ class Dispatcher
     ];
 
     /** @var string */
-    protected string $handlerName;
+    protected $handlerName;
 
     /** @var string */
-    protected string $requestMethod;
+    protected $requestMethod;
 
     /**
      * Dispatcher Constructor.
@@ -55,7 +53,7 @@ class Dispatcher
      * @param string $handlerName The handler name to be executed.
      * @param array  $handlers    An associative array that register request handlers.
      */
-    public function __construct(array $server, string $handlerName, array $handlers)
+    public function __construct($server, $handlerName, $handlers)
     {
         $this->server      = $server;
         $this->handlerName = $handlerName;
@@ -67,31 +65,30 @@ class Dispatcher
      * handler (controller method or a callback function).
      *
      * @return void
-     * @throws \Throwable
+     * @throws DispatcherException
      */
-    public function dispatch(): void
+    public function dispatch()
     {
-        $this->checkScriptContext();
+        $this->handleException(function () {
+            $this->checkScriptContext();
 
-        $this->validateHandlers($this->handlers);
+            $this->validateHandlers($this->handlers);
 
-        $this->requestMethod = $this->server['REQUEST_METHOD'];
+            $this->requestMethod = $this->server['REQUEST_METHOD'];
 
-        $this->context = $this->getRequestVariables($this->requestMethod);
+            $this->context = $this->getRequestVariables($this->requestMethod);
 
-        if (is_callable($this->beforeCallback)) {
-            if ($this->handleException(function () {
-                    return call_user_func($this->beforeCallback, (object)$this->context);
-                }) === false) {
+            if (is_callable($this->beforeCallback)
+                && call_user_func($this->beforeCallback, (object)$this->context) === false) {
                 return;
             }
-        }
 
-        if (!array_key_exists($this->handlerName, $this->context)) {
-            throw new DispatcherException("the key '$this->handlerName' not found in request variables.");
-        }
+            if (!array_key_exists($this->handlerName, $this->context)) {
+                throw new DispatcherException("the key '$this->handlerName' not found in request variables.");
+            }
 
-        $this->handle();
+            $this->handle();
+        });
     }
 
     /**
@@ -101,7 +98,7 @@ class Dispatcher
      *
      * @return Dispatcher
      */
-    public function registerControllers(array $controllers): Dispatcher
+    public function registerControllers($controllers)
     {
         foreach ($controllers as $controller) {
             if (is_string($controller)) {
@@ -122,7 +119,7 @@ class Dispatcher
      *
      * @return Dispatcher
      */
-    public function before(callable $callback): Dispatcher
+    public function before($callback)
     {
         $this->beforeCallback = $callback;
         return $this;
@@ -135,7 +132,7 @@ class Dispatcher
      *
      * @return Dispatcher
      */
-    public function onException(callable $callback): Dispatcher
+    public function onException($callback)
     {
         $this->onExceptionCallback = $callback;
         return $this;
@@ -149,10 +146,10 @@ class Dispatcher
      * @return void
      * @throws DispatcherException
      */
-    protected function checkScriptContext(): void
+    protected function checkScriptContext()
     {
         if (!function_exists('getallheaders')) {
-            throw new DispatcherException('Dispatcher works only within an HTTP request context '
+            throw new DispatcherException('AjaxDispatcher works only within an HTTP request context '
                 . '(request that issued by a HTTP client like a browser).');
         }
 
@@ -165,9 +162,10 @@ class Dispatcher
             ));
         }
 
+        // TODO needs to be changed
         if (array_key_exists('X-Requested-With', $headers)
-            && $headers['X-Requested-With'] === 'XMLHttpRequest') {
-            throw new DispatcherException('Dispatcher Accept only an AJAX requests.');
+            && $headers['X-Requested-With'] !== 'XMLHttpRequest') {
+            throw new DispatcherException('AjaxDispatcher Accept only AJAX requests.');
         }
     }
 
@@ -179,7 +177,7 @@ class Dispatcher
      * @return void
      * @throws DispatcherException
      */
-    protected function validateHandlers(array $handlers): void
+    protected function validateHandlers($handlers)
     {
         foreach ($handlers as $method => $_handlers) {
             if (!in_array($method, $this->HTTPMethods)) {
@@ -199,6 +197,36 @@ class Dispatcher
     }
 
     /**
+     * Gets the current request variables.
+     *
+     * @param string $requestMethod
+     *
+     * @return array
+     */
+    protected function getRequestVariables($requestMethod)
+    {
+        switch ($requestMethod) {
+            case 'GET':
+                return $_GET;
+                break;
+
+            case 'POST':
+                return $_POST;
+                break;
+
+            case 'PUT':
+            case 'DELETE':
+            case 'PATCH':
+                // TODO
+                break;
+
+            default:
+                throw new DispatcherException("Unknown HTTP request method '$requestMethod'.");
+        }
+    }
+
+    /**
+     * @return void
      * @throws DispatcherException
      */
     protected function handle()
@@ -234,7 +262,7 @@ class Dispatcher
      *
      * @return mixed
      */
-    protected function handleString(string $string)
+    protected function handleString($string)
     {
         return call_user_func($this->getCallableMethod($string));
     }
@@ -246,7 +274,7 @@ class Dispatcher
      *
      * @return mixed
      */
-    protected function handleArray(array $array)
+    protected function handleArray($array)
     {
         $args = [];
 
@@ -269,11 +297,9 @@ class Dispatcher
      */
     protected function handleCallback($callback)
     {
-        $this->handleException(function () use ($callback) {
-            $params  = array_splice($this->context, 1);
-            $indexed = array_values($params);
-            return call_user_func($callback, ...$indexed);
-        });
+        $params  = array_splice($this->context, 1);
+        $indexed = array_values($params);
+        return call_user_func($callback, ...$indexed);
     }
 
     /**
@@ -286,7 +312,7 @@ class Dispatcher
      * @return callable
      * @throws DispatcherException
      */
-    protected function getCallableMethod(string $string)
+    protected function getCallableMethod($string)
     {
         $tokens = @explode('@', $string);
 
@@ -303,9 +329,7 @@ class Dispatcher
         }
 
         return function ($args = []) use ($controller, $methodName) {
-            return $this->handleException(function () use ($controller, $methodName, $args) {
-                return call_user_func_array([$controller, $methodName], $args);
-            });
+            return call_user_func_array([$controller, $methodName], $args);
         };
     }
 
@@ -316,7 +340,7 @@ class Dispatcher
      *
      * @return string|false
      */
-    protected function getControllerByName(string $name)
+    protected function getControllerByName($name)
     {
         foreach ($this->controllers as $controller) {
             $path = explode('\\', get_class($controller));
@@ -329,47 +353,18 @@ class Dispatcher
     }
 
     /**
-     * Gets the current request variables.
-     *
-     * @param string $requestMethod
-     *
-     * @return array
-     */
-    protected function getRequestVariables(string $requestMethod): array
-    {
-        switch ($requestMethod) {
-            case 'GET':
-                return $_GET;
-                break;
-
-            case 'POST':
-                return $_POST;
-                break;
-
-            case 'PUT':
-            case 'DELETE':
-            case 'PATCH':
-                // TODO
-                break;
-
-            default:
-                throw new DispatcherException("Unknown HTTP request method '$requestMethod'.");
-        }
-    }
-
-    /**
      * handle exceptions that may throw during the callback call.
      *
      * @param callable $callback
      *
      * @return mixed
-     * @throws \Throwable
+     * @throws \Exception
      */
     protected function handleException($callback)
     {
         try {
             return $callback();
-        } catch (\Throwable $ex) {
+        } catch (\Exception $ex) {
             if (is_callable($this->onExceptionCallback)) {
                 call_user_func($this->onExceptionCallback, $ex);
                 return false;
