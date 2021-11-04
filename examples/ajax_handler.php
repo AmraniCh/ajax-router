@@ -5,12 +5,7 @@ require_once __DIR__ . '/app/controllers/PostsController.php';
 require_once __DIR__ . '/app/controllers/CommentsController.php';
 
 use AmraniCh\AjaxDispatcher\Dispatcher;
-
-function exceptionHandler($ex)
-{
-    echo(json_encode(["error" => $ex->getMessage()]));
-    exit();
-}
+use AmraniCh\AjaxDispatcher\DispatcherException;
 
 try {
     $dispatcher = new Dispatcher($_SERVER, 'handler', require __DIR__ . '/ajax/handlers.php');
@@ -33,4 +28,10 @@ try {
     $dispatcher->dispatch();
 } catch (DispatcherException $ex) {
     exceptionHandler($ex);
+}
+
+function exceptionHandler($ex)
+{
+    echo(json_encode(["error" => $ex->getMessage()]));
+    exit();
 }

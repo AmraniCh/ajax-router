@@ -37,7 +37,7 @@ class Dispatcher
         'POST',
         'PUT',
         'DELETE',
-        'PATCH',
+        'PATCH'
     ];
 
     /** @var string */
@@ -61,8 +61,8 @@ class Dispatcher
     }
 
     /**
-     * Start dispatching the current AJAX request to the appropriate
-     * handler (controller method or a callback function).
+     * Start dispatching the current AJAX request to the appropriate handler 
+     * (controller method or a callback function).
      *
      * @return void
      * @throws DispatcherException
@@ -82,8 +82,8 @@ class Dispatcher
 
         if (is_callable($this->beforeCallback)) {
             if ($this->handleException(function () {
-                    return call_user_func($this->beforeCallback, (object)$this->context);
-                }) === false) {
+                return call_user_func($this->beforeCallback, (object) $this->context);
+            }) === false) {
                 return;
             }
         }
@@ -130,7 +130,8 @@ class Dispatcher
     }
 
     /**
-     * Handle exceptions that may occur during the flow of the current AJAX request.
+     * Allows to use a custom exception handler for exceptions that may be thrown when calling
+     * a handler for the current AJAX request.
      *
      * @param callable $callback a callback function that will accept the exception as a first argument.
      *
@@ -143,9 +144,8 @@ class Dispatcher
     }
 
     /**
-     * Checks if the current script was executed via an HTTP client
-     * like a browser, if so check the HTTP request is issued using
-     * the XMLHTTPRequest in the client side.
+     * Checks if the current script was executed via an HTTP client like a browser,
+     * if so check the HTTP request is issued using the XMLHTTPRequest in the client side.
      *
      * @return void
      * @throws DispatcherException
@@ -231,17 +231,17 @@ class Dispatcher
             }
 
             if (is_string($handler)) {
-                echo($this->handleString($handler));
+                echo ($this->handleString($handler));
                 return;
             }
 
             if (is_array($handler)) {
-                echo($this->handleArray($handler));
+                echo ($this->handleArray($handler));
                 return;
             }
 
             if (is_callable($handler)) {
-                echo($this->handleCallback($handler));
+                echo ($this->handleCallback($handler));
                 return;
             }
         }
@@ -299,8 +299,7 @@ class Dispatcher
     }
 
     /**
-     * Extract the controller and method from
-     * the giving string and return the callable
+     * Extract the controller and method from the giving string and return the callable
      * method from the controller object.
      *
      * @param string $string
