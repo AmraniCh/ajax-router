@@ -32,6 +32,9 @@
         "filp/whoops": "^2.14",
         "symfony/var-dumper": "^5.3"
     },
+    "scripts": {
+        "run-tests": "vendor/bin/phpunit"
+    },
     "config": {
         "platform": {
             "php": "7.4"
