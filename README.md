@@ -2,13 +2,18 @@
 
 Handle AJAX requests and send them to an appropriate handler.
 
-## Why uses it ?
+## Background
 
 This library lets you route your AJAX requests to a controller method or a specific callback, depending on a specific
 request parameter variable that contains the desired function/method name to be executed on the server-side, this
 library can be useful for some legacy web applications that not use a URL based routing and not requires some additional
 server components to be enabled like the Apache rewrite module for example, the library also can improve the way that
 your AJAX requests are handled and help you to write clean code to achieve high maintainable code.
+
+The idea of the library came to my mind a long time ago when I was mostly developing web applications using just plain
+PHP, these applications were performing a lot of AJAX requests into a single PHP file, that file can have a hundred
+lines that handled this requests depending on function name that sent with the request as a parameter, so I've started
+to think of ways to clean up a little this file and improve the readability and make the code more maintainable.
 
 ## Installation
 
@@ -18,7 +23,7 @@ You can install this library using composer.
 composer require amranich/ajax-dispatcher
 ```
 
-Otherwise you can download the repo and include the classes in the `src` folder to your application.
+Otherwise, you can download the repo and include the classes in the `src` folder to your application.
 
 ## Basic usage
 
@@ -30,6 +35,7 @@ require_once __DIR__ . '/app/controllers/PostsController.php';
 require_once __DIR__ . '/app/controllers/CommentsController.php';
 
 use AmraniCh\AjaxDispatcher\Dispatcher;
+use AmraniCh\AjaxDispatcher\DispatcherException;
 
 try {
     $dispatcher = new Dispatcher($_SERVER, 'handler', [
@@ -69,6 +75,7 @@ function exceptionHandler($ex)
     echo(json_encode(["error" => $ex->getMessage()]));
     exit();
 }
+
 ```
 
 ## API Methods
@@ -100,7 +107,8 @@ function exceptionHandler($ex)
 
 ### `onException(callable $callback)`
 
-*Handle exceptions that may occur during the flow of the current AJAX request.*
+*Allows to use a custom exception handler for exceptions that may be thrown when calling a handler for the current AJAX
+request.*
 
 * **$callback :** a callback function that will accept the exception as a first argument.
 
@@ -112,17 +120,12 @@ function exceptionHandler($ex)
 
 ## Inspirations
 
-The idea of the library came to my mind a long time ago when I was mostly developing web applications using just plain
-PHP, these applications were performing a lot of AJAX requests into a single PHP file, that file can have a hundred
-lines that handled this requests depending on function name that sent with the request as a parameter, so I've started
-to think of ways to clean up a little this file and improve the readability and make the code more maintainable.
-
 The way that this README is written is inspired by the README of this
 library [mirazmac/dotenvwriter](https://github.com/MirazMac/DotEnvWriter/blob/master/README.md).
 
 ## Contribution
 
-All types of contribution are welcome, so do not hesitate to send a PR or open an issue or just fixing a typo.
+All types of contribution are welcome, so do not hesitate to send a PR to add a new feature or just fixing a typo.
 
 ## Support
 
