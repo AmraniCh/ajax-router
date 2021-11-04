@@ -1,19 +1,8 @@
 # AmraniCh/AjaxDispatcher
 
+[![tests](https://github.com/AmraniCh/ajax-dispatcher/actions/workflows/tests.yml/badge.svg)](https://github.com/AmraniCh/ajax-dispatcher/actions/workflows/tests.yml)
+
 Handle AJAX requests and send them to an appropriate handler.
-
-## Background
-
-This library lets you route your AJAX requests to a controller method or a specific callback, depending on a specific
-request parameter variable that contains the desired function/method name to be executed on the server-side, this
-library can be useful for some legacy web applications that not use a URL based routing and not requires some additional
-server components to be enabled like the Apache rewrite module for example, the library also can improve the way that
-your AJAX requests are handled and help you to write clean code to achieve high maintainable code.
-
-The idea of the library came to my mind a long time ago when I was mostly developing web applications using just plain
-PHP, these applications were performing a lot of AJAX requests into a single PHP file, that file can have a hundred
-lines that handled this requests depending on function name that sent with the request as a parameter, so I've started
-to think of ways to clean up a little this file and improve the readability and make the code more maintainable.
 
 ## Installation
 
@@ -117,6 +106,19 @@ request.*
 ### `dispatch()`
 
 *Start dispatching the current AJAX request to the appropriate handler (controller method or a callback function).*
+
+## Background
+
+This library lets you route your AJAX requests to a controller method or a specific callback, depending on a specific
+request parameter variable that contains the desired function/method name to be executed on the server-side, this
+library can be useful for some legacy web applications that not use a URL based routing and not requires some additional
+server components to be enabled like the Apache rewrite module for example, the library also can improve the way that
+your AJAX requests are handled and help you to write clean code to achieve high maintainable code.
+
+The idea of the library came to my mind a long time ago when I was mostly developing web applications using just plain
+PHP, these applications were performing a lot of AJAX requests into a single PHP file, that file can have a hundred
+lines that handled this requests depending on function name that sent with the request as a parameter, so I've started
+to think of ways to clean up a little this file and improve the readability and make the code more maintainable.
 
 ## Inspirations
 
