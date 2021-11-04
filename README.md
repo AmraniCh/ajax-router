@@ -6,10 +6,27 @@ Handle AJAX requests and send them to an appropriate handler.
 
 ## Installation
 
-You can install this library using composer.
+You can install this library using composer, and because there is only one released version which is a pre-release (beta) 
+version, you can choose between these two methods to install it.
+
+### Require the exact version :
 
 ```bash
-composer require amranich/ajax-dispatcher
+composer require amranich/ajax-dispatcher:v1.0.0-beta
+```
+
+### Change the minimum stability for composer  : 
+
+Add this option to your composer.json file :
+
+```
+"minimum-stability": "beta"
+```
+
+and then run composer install :
+
+```bash
+composer install
 ```
 
 Otherwise, you can download the repo and include the classes in the `src` folder to your application.
