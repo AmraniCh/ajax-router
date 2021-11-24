@@ -1,156 +1,211 @@
 # AmraniCh/AjaxDispatcher
 
 [![tests](https://github.com/AmraniCh/ajax-dispatcher/actions/workflows/tests.yml/badge.svg)](https://github.com/AmraniCh/ajax-dispatcher/actions/workflows/tests.yml)
+[![coverage](https://img.shields.io/codecov/c/github/AmraniCh/ajax-dispatcher-clone?token=1N5E5MNV8M)](https://app.codecov.io/gh/AmraniCh/ajax-dispatcher)
 
 Handle AJAX requests and send them to an appropriate handler.
 
-## Installation
+Also provides helper classes to simulate HTTP requests and responses.
 
-You can install this library using composer, and because there is only one released version which is a pre-release (beta) 
-version, you can choose between these two methods to install it.
+## Requirements
 
-### Require the exact version :
+* php >= 5.6
 
-```bash
-composer require amranich/ajax-dispatcher:v1.0.0-beta
-```
-
-### Change the minimum stability for composer  : 
-
-Add this option to your composer.json file :
-
-```
-"minimum-stability": "beta"
-```
-
-and then run composer install :
+## Getting Started
 
 ```bash
-composer install
+composer require amranich/ajax-dispatcher:v1.0.0-beta2
 ```
 
-Otherwise, you can download the repo and include the classes in the `src` folder to your application.
-
-## Basic usage
+You can copy/paste this code snippet for a quick start.
 
 ```php
 <?php
 
 require __DIR__ . '/vendor/autoload.php';
-require_once __DIR__ . '/app/controllers/PostsController.php';
-require_once __DIR__ . '/app/controllers/CommentsController.php';
 
+use AmraniCh\AjaxDispatcher\Http\Request;
+use AmraniCh\AjaxDispatcher\Handler\HandlerCollection;
+use AmraniCh\AjaxDispatcher\Handler\Handler;
+use AmraniCh\AjaxDispatcher\Http\Response;
+use AmraniCh\AjaxDispatcher\Router;
 use AmraniCh\AjaxDispatcher\Dispatcher;
-use AmraniCh\AjaxDispatcher\DispatcherException;
 
 try {
-    $dispatcher = new Dispatcher($_SERVER, 'handler', [
-        'GET' => [
-            'posts' => 'PostsController@getPosts',
-            'comments' =>  ['CommentsController@getCommentByID', 'id'],
-        ],
-        'POST' => [
-            'signIn' => function($id, $name) {
-                echo("user with id='$id' and name='$name' is sign in successfully!");
-            },
-        ],
+    $request = new Request($_SERVER);
+
+    $handlers = new HandlerCollection([
+        
+        // ?handler=hello&name=john
+        Handler::get('hello', function (Request $request) {
+            return Response::raw("Hello $request->name!!");
+        }),
     ]);
 
-    $dispatcher->registerControllers([
-        PostsController::class,
-        CommentsController::class,
-    ]);
+    $router     = new Router($request, 'handler', $handlers);
+    $dispatcher = new Dispatcher($router);
 
-    $dispatcher->before(function($params) {
-        if (!isset($params->handler)) {
-            throw new Exception("No handler name was specified with this AJAX request!");
-        }
-    });
+    $dispatcher
+        ->cleanBuffer()
+        ->dispatch()
+        ->stop();
 
-    $dispatcher->onException(function($ex) {
-        exceptionHandler($ex);
-    });
-
-    $dispatcher->dispatch();
-} catch (DispatcherException $ex) {
+} catch (\Exception $ex) {
     exceptionHandler($ex);
 }
 
-function exceptionHandler($ex)
+function exceptionHandler(\Exception $ex)
 {
-    echo(json_encode(["error" => $ex->getMessage()]));
+    Response::json(['error' => $ex->getMessage()], $ex->getCode())->send();
     exit();
 }
-
 ```
 
-## API Methods
+## Route to controller/class method
 
-### `__construct(array $server, string $handlerName, array $handlers)`
+If you like to put the business logic in a separate class or in a controller, you can route your requests to them like this :
 
-* **$server :** the server variables.
-* **$handlerName :** the handler name to be executed.
-* **$handlers :** an associative array that register request handlers.
+```php
+Handler::get('getProfile', [UserManager::class, 'getProfile']),
+```
 
-<hr>
+Or :
 
-### `registerControllers(array $controllers)`
+```php
+Handler::get('getProfile', 'UserManager@getProfile')
+```
 
-*Register controllers instances and namespaces.*
+But you have after to register the controller namespace/instance in the router, like this :
 
-* **$controllers :** an array of controller instances or namespaces.
+```php
+$router->registerControllers([
+    UserManager::class,
+]);
+```
 
-<hr>
+If the controller/class has some dependencies that must be passed within the constructor, you can still instantiate the
+controller on yourself :
 
-### `before(callable $callback)`
+```php
+$router->registerControllers([
+    new UserManager($dependencyOne, $dependencyTwo)
+]);
+```
 
-*Executes some code before dispatching the current request.*
+## Catch handlers exceptions
 
-* **$callback :** the callback function to be executed, all the request parameters will be passed to this callback as a
-  first argument.
+*I want to catch exceptions that only occurs from my AJAX handlers, and not those thrown by the library or somewhere else, how I can
+do that ?*
 
-<hr>
+Answer :
 
-### `onException(callable $callback)`
+```php
+$dispatcher->onException(function (\Exception $ex) {
+    // $ex exception thrown by a handler
+});
+```
 
-*Allows to use a custom exception handler for exceptions that may be thrown when calling a handler for the current AJAX
-request.*
+## Clean output buffer (Recommended)
 
-* **$callback :** a callback function that will accept the exception as a first argument.
+To be sure that the output (response) for the ajax request it comes only from the defined handlers, and prevent
+unexpected echos from sending their content to the browser :
 
-<hr>
+```php
+$dispatcher
+    ->cleanBuffer()
+    ->dispatch();
+```
 
-### `dispatch()`
+## Stop after dispatching the request (Recommended)
 
-*Start dispatching the current AJAX request to the appropriate handler (controller method or a callback function).*
+Tells the dispatcher to exit the script right after the handler execution.
+
+```php
+$dispatcher
+    ->dispatch()
+    ->stop();
+```
+
+## Security tips for production environments
+
+### 1. Check for the request if it is an "AJAX request"
+
+```php
+if (!$request->isAjaxRequest()) {
+    Response::raw('bad request.', 400)->send();
+    exit();
+}
+```
+
+**Note :** The `isAjaxRequest` method will look for the `X-REQUESTED-WITH` header in the coming request headers, which
+obviously can be spoofed. AJAX requests can be emulated very easily and there is a sure way to know that the request is
+definitely an "AJAX request", however, it recommended doing this check.
+
+### 2. Check for your own URL
+
+If you want to add an extra layer of security to your application, you can check for the `HTTP_PREFER` header that hold
+the address of the page that the request coming from.
+
+```php
+if (!array_key_exists('HTTP_REFERER', $request->getHeaders())
+    || $request->getHeaderValue('HTTP_REFERER') !== 'https://www.yourdomain.com/app') {
+    Response::raw('bad request.', 400)->send();
+    exit();
+}
+```
+
+**Note :** HTTP headers can be spoofed, that means the content of the `HTTP_PREFER` header cannot be trusted.
+
+### 3. Using CRSF tokens (Recommanded for production servers)
+
+Generate the CRSF token :
+
+```php
+session_start(); 
+if (!isset($_SESSION['CSRF_TOKEN'])) {
+    // random_bytes function introduced as of PHP 7
+    $_SESSION['CSRF_TOKEN'] = bin2hex(random_bytes(32));
+}
+```
+
+Inject the token somewhere in your page, for example in a meta tag :
+
+```html
+<meta name="csrf-token" content="<?= $_SESSION['CSRF_TOKEN'] ?>">
+```
+
+Send the token in every AJAX request that you made :
+
+```javascript
+$.ajaxSetup({
+    headers: { 'X-CSRF-TOKEN':  $('meta[name="csrf-token"]').attr('content') },
+});
+```
+
+### Complete example for production usage
+
+I already implemented all these security tips in one example, if you want to check it out see the [examples](examples) folder.
 
 ## Background
 
-This library lets you route your AJAX requests to a controller method or a specific callback, depending on a specific
-request parameter variable that contains the desired function/method name to be executed on the server-side, this
-library can be useful for some legacy web applications that not use a URL based routing and not requires some additional
-server components to be enabled like the Apache rewrite module for example, the library also can improve the way that
-your AJAX requests are handled and help you to write clean code to achieve high maintainable code.
-
 The idea of the library came to my mind a long time ago when I was mostly developing web applications using just plain
-PHP, these applications were performing a lot of AJAX requests into a single PHP file, that file can have a hundred
-lines that handled this requests depending on function name that sent with the request as a parameter, so I've started
-to think of ways to clean up a little this file and improve the readability and make the code more maintainable.
-
-## Inspirations
-
-The way that this README is written is inspired by the README of this
-library [mirazmac/dotenvwriter](https://github.com/MirazMac/DotEnvWriter/blob/master/README.md).
+PHP, some of these applications were performing a lot of AJAX requests into a single PHP file, that file can have a hundred
+lines of code that process these requests depending on a function/method name that has to send along with the request, 
+so I started to think of ways to clean up this file to improve the readability and maintainability of the code.
 
 ## Contribution
 
-All types of contribution are welcome, so do not hesitate to send a PR to add a new feature or just fixing a typo.
+All types of contribution are welcome, so do not hesitate to send a PR adding new feature or just fixing a typo.
 
-## Support
+## Thanks to
 
 A special thanks to [JetBrains](https://www.jetbrains.com) company for their support to my OSS contributions.
 
-<img width="150" src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png?_gl=1*1evhn6q*_ga*MzA3MTk5NzQ3LjE2MzU3OTk3MDA.*_ga_V0XZL7QHEB*MTYzNTg5MzE3NS4yLjEuMTYzNTg5MzkzNC4xNg..&_ga=2.162913596.1450626373.1635893177-307199747.1635799700"/>
+<img width="130" src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png?_gl=1*1evhn6q*_ga*MzA3MTk5NzQ3LjE2MzU3OTk3MDA.*_ga_V0XZL7QHEB*MTYzNTg5MzE3NS4yLjEuMTYzNTg5MzkzNC4xNg..&_ga=2.162913596.1450626373.1635893177-307199747.1635799700"/>
+
+## Support me
+
+<a href="https://www.buymeacoffee.com/AmraniCh"><img width="500px" src="https://img.buymeacoffee.com/api/?url=aHR0cHM6Ly9jZG4uYnV5bWVhY29mZmVlLmNvbS91cGxvYWRzL3Byb2ZpbGVfcGljdHVyZXMvMjAyMS8xMC9jYWYzNWY4MjgzNGRjMTBhNWEyMzhmN2MwNDJlODJhMy5qcGdAMzAwd18wZS53ZWJw&creator=AmraniCh&is_creating=a%20PHP/JavaScript%20Engineer,%20Open%20Source%20Enthusiast&design_code=1&design_color=%23BD5FFF&slug=AmraniCh"/></a>
 
 ## LICENSE
 
