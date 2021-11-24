@@ -19,9 +19,6 @@ class Dispatcher
     protected $router;
 
     /** @var callable */
-    protected $beforeCallback;
-
-    /** @var callable */
     protected $onExceptionCallback;
 
     /** @var bool */
@@ -41,14 +38,6 @@ class Dispatcher
     public function getRouter()
     {
         return $this->router;
-    }
-
-    /**
-     * @return callable
-     */
-    public function getBeforeCallback()
-    {
-        return $this->beforeCallback;
     }
 
     /**
@@ -80,19 +69,6 @@ class Dispatcher
      */
     public function dispatch()
     {
-        if ($this->beforeCallback) {
-            $requestVars = $this
-                ->getRouter()
-                ->getRequest()
-                ->getVariables();
-                
-            if ($this->handleException(function() use ($requestVars) {
-                    return call_user_func($this->beforeCallback, (object)$requestVars);
-                }) === false) {
-                return null;
-            }
-        }
-
         $handler  = $this->router->run();
 
         $response = $this->handleException($handler);
@@ -106,21 +82,6 @@ class Dispatcher
         }
 
         $response->send();
-
-        return $this;
-    }
-
-    /**
-     * Executes some code before dispatching the current request.
-     *
-     * @param callable $callable The callback function to be executed, all the request parameters will be passed to
-     *                           this callback as a first argument.
-     *
-     * @return Dispatcher
-     */
-    public function before(callable $callable)
-    {
-        $this->beforeCallback = $callable;
 
         return $this;
     }
