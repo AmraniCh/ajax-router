@@ -1,37 +1,68 @@
 <?php
 
-require dirname(__DIR__) . '/vendor/autoload.php';
-require_once __DIR__ . '/app/controllers/PostsController.php';
-require_once __DIR__ . '/app/controllers/CommentsController.php';
+declare(strict_types=1);
 
+ob_start();
+session_start();
+
+require dirname(__DIR__) . '/vendor/autoload.php';
+require __DIR__ . '/app/controllers/PostController.php';
+
+use AmraniCh\AjaxDispatcher\Http\Request;
+use AmraniCh\AjaxDispatcher\Http\Response;
+use AmraniCh\AjaxDispatcher\Handler\HandlerCollection;
+use AmraniCh\AjaxDispatcher\Router;
 use AmraniCh\AjaxDispatcher\Dispatcher;
-use AmraniCh\AjaxDispatcher\DispatcherException;
+
+$config = require __DIR__ . '/config.php';
 
 try {
-    $dispatcher = new Dispatcher($_SERVER, 'handler', require __DIR__ . '/ajax/handlers.php');
+    $request = new Request($_SERVER);
 
-    $dispatcher->registerControllers([
-        PostsController::class,
-        CommentsController::class,
-    ]);
-
-    $dispatcher->before(function($params) {
-        if (!isset($params->handler)) {
-            throw new Exception("No handler name was specified with this AJAX request!");
+    if ($config['env'] === 'PROD') {
+        if (!$request->isAjaxRequest()) {
+            Response::raw('bad request.', 400)->send();
+            exit();
         }
-    });
 
-    $dispatcher->onException(function($ex) {
-        exceptionHandler($ex);
-    });
+        if (!array_key_exists('HTTP_REFERER', $request->getHeaders())
+            || $request->getHeaderValue('HTTP_REFERER') !== $config['domain']) {
+            Response::raw('bad request.', 400)->send();
+            exit();
+        }
 
-    $dispatcher->dispatch();
-} catch (DispatcherException $ex) {
-    exceptionHandler($ex);
-}
+        if (!array_key_exists('HTTP_X_CSRF_TOKEN', $request->getHeaders())) {
+            Response::raw("CSRF token not sent.", 400)->send();
+            exit();
+        }
 
-function exceptionHandler($ex)
-{
-    echo(json_encode(["error" => $ex->getMessage()]));
+        if ($request->getHeaders()['HTTP_X_CSRF_TOKEN'] !== $_SESSION['CSRF_TOKEN']) {
+            Response::raw("Invalid CSRF token.", 400)->send();
+            exit();
+        }
+    }
+
+    $handlers   = new HandlerCollection(require __DIR__ . '/handlers.php');
+    $router     = new Router($request, 'handler', $handlers);
+    $dispatcher = new Dispatcher($router);
+
+    $router->registerControllers([
+        PostController::class
+    ]);
+ 
+    $dispatcher
+        ->cleanBuffer()
+        ->dispatch()
+        ->stop();
+
+} catch (\Throwable $ex) {
+    global $config;
+    
+    if ($config['env'] === 'DEV') {
+        Response::json(['error' => $ex->getMessage()], $ex->getCode())->send();
+    } elseif ($config['env'] === 'PROD') {
+        Response::raw('Somethong goes wrong!', 500)->send();
+    }
+
     exit();
 }
