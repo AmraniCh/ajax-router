@@ -4,6 +4,6 @@ return [
 
     'env'    => 'DEV', // or PROD for production
 
-    'domain' => 'https://www.yourdomain.com/app',
+    'domain' => 'https://www.yourdomain.com',
 
 ];

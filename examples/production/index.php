@@ -14,7 +14,7 @@
         <meta content="IE=edge" http-equiv="X-UA-Compatible">
         <meta content="width=device-width, initial-scale=1.0" name="viewport">
         <meta name="csrf-token" content="<?= $_SESSION['CSRF_TOKEN'] ?>">
-        <title>Usage Example</title>
+        <title>Production usage example</title>
     </head>
     <body>
         <button id="getPostsBtn" type="button">
@@ -60,7 +60,7 @@
             $(() => {
                 $.ajaxSetup({
                     headers: { 'X-CSRF-TOKEN':  $('meta[name="csrf-token"]').attr('content') },
-                    url: './ajax_handler.php',
+                    url: './production/ajax_handler.php',
                     dataType: 'JSON',
                     complete: function (xhr, textStatus) {
                         var params = this.type === 'GET' ? this.url : this.data;
