@@ -12,10 +12,24 @@ namespace AmraniCh\AjaxDispatcher\Exception;
  */
 class MethodNotAllowedException extends AjaxDispatcherException
 {
+
     public function __construct($message, $code = 405, $allowedMethods = [])
     {
         parent::__construct($message, $code, [
-            "Allow" => $allowedMethods
+            "Allow" => $this->formatAllowHeaderValue($allowedMethods)
         ]);
+    }
+
+    /**
+     * @param array $methods
+     * @return string
+     */
+    protected function formatAllowHeaderValue(array $methods)
+    {
+        if (empty($methods)) {
+            return '';
+        }
+
+        return implode(', ', $methods);
     }
 }

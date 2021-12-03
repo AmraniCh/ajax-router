@@ -2,13 +2,13 @@
 
 namespace AmraniCh\AjaxDispatcher;
 
-use AmraniCh\AjaxDispatcher\Http\Request;
-use AmraniCh\AjaxDispatcher\Handler\HandlerCollection;
-use AmraniCh\AjaxDispatcher\Exception\BadRequestException;
 use AmraniCh\AjaxDispatcher\Exception\AjaxDispatcherException;
-use AmraniCh\AjaxDispatcher\Exception\InvalidArgumentException;
+use AmraniCh\AjaxDispatcher\Exception\BadRequestException;
 use AmraniCh\AjaxDispatcher\Exception\HandlerNotFoundException;
+use AmraniCh\AjaxDispatcher\Exception\InvalidArgumentException;
 use AmraniCh\AjaxDispatcher\Exception\MethodNotAllowedException;
+use AmraniCh\AjaxDispatcher\Handler\HandlerCollection;
+use AmraniCh\AjaxDispatcher\Http\Request;
 
 /**
  * AmraniCh\AjaxDispatcher\Router
@@ -136,7 +136,10 @@ class Router
     public function run()
     {
         if (!array_key_exists($this->handlerName, $this->request->getVariables())) {
-            throw new BadRequestException("the handler name '$this->handlerName' not found in request variables.");
+            throw new BadRequestException(sprintf(
+                "the handler name '%s' not found in request variables.",
+                $this->handlerName
+            ));
         }
 
         foreach ($this->handlerCollection->getHandlers() as $handler) {
@@ -145,12 +148,11 @@ class Router
             }
 
             if (!in_array($this->request->getMethod(), $handler->getMethods())) {
-                $allowedMethods = implode(', ', $handler->getMethods());
                 throw new MethodNotAllowedException(sprintf(
                     "The handler '%s' is registered for another HTTP request method(s) [%s].",
                     $handler->getName(),
-                    $allowedMethods
-                ), 405, $allowedMethods);
+                    implode(', ', $handler->getMethods())
+                    ), 405, $handler->getMethods());
             }
 
             return $this
