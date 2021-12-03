@@ -7,6 +7,7 @@ use AmraniCh\AjaxDispatcher\Handler\Handler;
 use AmraniCh\AjaxDispatcher\HandlerResolver;
 use AmraniCh\AjaxDispatcher\Exception\LogicException;
 use AmraniCh\AjaxDispatcher\Exception\InvalidArgumentException;
+use AmraniCh\AjaxDispatcher\Exception\UnexpectedValueException;
 
 class HandlerResolverTest extends TestCase
 {
@@ -125,7 +126,7 @@ class HandlerResolverTest extends TestCase
             ->onlyMethods([])
             ->getMock();
 
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(UnexpectedValueException::class);
         $this->expectExceptionCode(500);
 
         $this->assertIsCallable($handlerResolverMock->resolve($handlerMock));

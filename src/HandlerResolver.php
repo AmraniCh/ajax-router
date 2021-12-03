@@ -6,7 +6,7 @@ use AmraniCh\AjaxDispatcher\Http\Request;
 use AmraniCh\AjaxDispatcher\Handler\Handler;
 use AmraniCh\AjaxDispatcher\Exception\LogicException;
 use AmraniCh\AjaxDispatcher\Internal\ControllerMethod;
-use AmraniCh\AjaxDispatcher\Exception\InvalidArgumentException;
+use AmraniCh\AjaxDispatcher\Exception\UnexpectedValueException;
 
 /**
  * AmraniCh\AjaxDispatcher\HandlerResolver
@@ -33,7 +33,7 @@ class HandlerResolver
      * @param Handler $handler
      *
      * @return \Closure
-     * @throws InvalidArgumentException
+     * @throws UnexpectedValueException
      */
     public function resolve(Handler $handler)
     {
@@ -48,7 +48,7 @@ class HandlerResolver
             return $this->resolveCallable($value);
         }
 
-        throw new InvalidArgumentException(sprintf(
+        throw new UnexpectedValueException(sprintf(
             "Unexpected handler value, expecting string/callable '%s' given.",
             gettype($handler)
         ));
