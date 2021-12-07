@@ -1,5 +1,10 @@
 # Change Log
 
+## UNKNOWN
+
+* Added new exception class `UnexpectedValueException`.
+* Added `Exception\HttpExceptionTrait` trait.
+
 ## 1.0.0-beta2 (2021-11-24)
 
 * Second Beta version.
