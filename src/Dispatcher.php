@@ -2,12 +2,13 @@
 
 namespace AmraniCh\AjaxDispatcher;
 
-use AmraniCh\AjaxDispatcher\Http\Response;
+use AmraniCh\AjaxDispatcher\Router\Router;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * AmraniCh\AjaxDispatcher\Dispatcher
  *
- * Uses the router to generate the actual response for the AJAX request.
+ * Generate the actual response for the AJAX request.
  *
  * @since  1.0.0
  * @author El Amrani Chakir <contact@amranich.dev>
@@ -23,6 +24,9 @@ class Dispatcher
 
     /** @var bool */
     protected $cleanBuffer = false;
+
+    /** @var PSR7ResponseSender */
+    protected $sender;
 
     /**
      * @param Router $router
@@ -69,19 +73,23 @@ class Dispatcher
      */
     public function dispatch()
     {
-        $handler  = $this->router->run();
+        $handler = $this->router->run();
 
         $response = $this->handleException($handler);
 
-        if (!$response instanceof Response) {
-            $response = Response::raw($response);
+        if ($this->cleanBuffer && ob_get_level() > 0) {
+            ob_clean();
         }
 
-        if ($this->cleanBuffer && $this->getBufferLevels() > 0) {
-            $this->eraseBuffer();
+        $sender = new PSR7ResponseSender($response);
+
+        if ($response instanceof ResponseInterface) {
+            $sender->send();
         }
 
-        $response->send();
+        if (is_string($response)) {
+            echo $response;
+        }
 
         return $this;
     }
@@ -123,23 +131,7 @@ class Dispatcher
     }
 
     /**
-     * @return bool
-     */
-    protected function eraseBuffer()
-    {
-        return ob_clean();
-    }
-
-    /**
-     * @return int
-     */
-    protected function getBufferLevels()
-    {
-        return ob_get_level();
-    }
-
-    /**
-     * handle exceptions that may throw during the callback call.
+     * handle exceptions that may thrown during the callback call.
      *
      * @param \Closure $callback
      *

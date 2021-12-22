@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use PHPUnit\Framework\TestCase;
 use AmraniCh\AjaxDispatcher\Exception\InvalidArgumentException;
 use AmraniCh\AjaxDispatcher\Handler\Handler;
+use PHPUnit\Framework\TestCase;
 
 class HandlerTest extends TestCase
 {
