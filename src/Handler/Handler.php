@@ -2,7 +2,7 @@
 
 namespace AmraniCh\AjaxDispatcher\Handler;
 
-use AmraniCh\AjaxDispatcher\Http\Request;
+use AmraniCh\AjaxDispatcher\Exception\HandlersFileException;
 use AmraniCh\AjaxDispatcher\Exception\InvalidArgumentException;
 
 /**
@@ -165,8 +165,9 @@ class Handler
      *
      * @param string          $name
      * @param string|callable $value
-     * 
+     *
      * @return Handler
+     * @throws InvalidArgumentException
      */
     public static function get($name, $value)
     {
@@ -178,8 +179,9 @@ class Handler
      *
      * @param string          $name
      * @param string|callable $value
-     * 
+     *
      * @return Handler
+     * @throws InvalidArgumentException
      */
     public static function post($name, $value)
     {
@@ -205,8 +207,9 @@ class Handler
      *
      * @param string          $name
      * @param string|callable $value
-     * 
+     *
      * @return Handler
+     * @throws InvalidArgumentException
      */
     public static function delete($name, $value)
     {
@@ -215,12 +218,13 @@ class Handler
 
     /**
      * Creates handler with multiple request methods.
-     * 
+     *
      * @param array           $methods
      * @param string          $name
      * @param string|callable $value
-     * 
+     *
      * @return Handler
+     * @throws InvalidArgumentException
      */
     public static function many($methods, $name, $value)
     {

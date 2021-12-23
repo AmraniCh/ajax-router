@@ -5,7 +5,7 @@ namespace AmraniCh\AjaxDispatcher\Internal;
 use AmraniCh\AjaxDispatcher\Exception\LogicException;
 
 /**
- * AmraniCh\AjaxDispatcher\ControllerMethod
+ * AmraniCh\AjaxDispatcher\Internal\ControllerMethod
  *
  * @since  1.0.0
  * @author El Amrani Chakir <contact@amranich.dev>
