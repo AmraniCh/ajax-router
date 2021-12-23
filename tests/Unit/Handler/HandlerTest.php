@@ -110,7 +110,7 @@ class HandlerTest extends TestCase
         $handlerMock->setValue(['CommmentController@addComment']);
     }
 
-    public function test_getType_with_callable()
+    public function test_getType_with_callable(): void
     {
         $handlerMock = $this->getMockBuilder(Handler::class)
             ->disableOriginalConstructor()
@@ -122,7 +122,7 @@ class HandlerTest extends TestCase
         $this->assertSame('callable', $handlerMock->getType());
     }
 
-    public function test_getType_with_string()
+    public function test_getType_with_string(): void
     {
         $handlerMock = $this->getMockBuilder(Handler::class)
             ->disableOriginalConstructor()

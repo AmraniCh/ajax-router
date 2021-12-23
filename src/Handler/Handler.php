@@ -161,6 +161,36 @@ class Handler
     }
 
     /**
+     * Define handlers from the giving file content.
+     *
+     * @param string $path
+     * 
+     * @return array
+     */
+    public static function fromFile($path)
+    {
+        if (!file_exists($path)) {
+            throw new HandlersFileException("The handlers file ($path) not exists.");
+        }
+
+        if (!is_readable($path)) {
+            throw new HandlersFileException("The handlers file ($path) is not readable, please check the file permissions."); 
+        }
+
+        $content = include($path);
+
+        if (!is_array($content)) {
+            throw new HandlersFileException(sprintf(
+                "The handlers file (%s) must return an array of handlers objects, '%s' value returned.",
+                $path,
+                gettype($content)
+            )); 
+        }
+
+        return $content;
+    }
+
+    /**
      * Creates handler with GET request method.
      *
      * @param string          $name

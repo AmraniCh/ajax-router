@@ -81,9 +81,8 @@ class Dispatcher
             ob_clean();
         }
 
-        $sender = new PSR7ResponseSender($response);
-
         if ($response instanceof ResponseInterface) {
+            $sender = new PSR7ResponseSender($response);
             $sender->send();
         }
 
