@@ -1,52 +1,60 @@
-![[preview]](https://socialify.git.ci/AmraniCh/ajax-dispatcher/image?description=1&descriptionEditable=Handle%20AJAX%20requests%20and%20send%20them%20to%20an%20appropriate%20handler.%20Also%20provides%20helper%20classes%20to%20simulate%20HTTP%20requests%20and%20responses.&font=Raleway&owner=1&pattern=Charlie%20Brown&theme=Light)
-
 [![packagist](https://img.shields.io/packagist/v/AmraniCh/ajax-dispatcher?include_prereleases)](https://packagist.org/packages/amranich/ajax-dispatcher)
+![php version](https://img.shields.io/packagist/php-v/AmraniCh/ajax-dispatcher)
 [![tests](https://github.com/AmraniCh/ajax-dispatcher/actions/workflows/tests.yml/badge.svg)](https://github.com/AmraniCh/ajax-dispatcher/actions/workflows/tests.yml)
-[![coverage](https://img.shields.io/codecov/c/github/AmraniCh/ajax-dispatcher-clone?token=1N5E5MNV8M)](https://app.codecov.io/gh/AmraniCh/ajax-dispatcher)
+[![codecov](https://codecov.io/gh/AmraniCh/ajax-dispatcher/branch/master/graph/badge.svg?token=D0766BN57O)](https://codecov.io/gh/AmraniCh/ajax-dispatcher)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/AmraniCh/ajax-dispatcher/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/AmraniCh/ajax-dispatcher/?branch=master)
-
 
 ## Getting Started
 
 ```bash
-composer require amranich/ajax-dispatcher:v1.0.0-beta2
+composer require amranich/ajax-dispatcher:v1.0.0-beta3
 ```
 
 You can copy/paste this code snippet for a quick start.
+
+We're using Guzzle PSR-7 interface implementation here, but you can use any other library you like as long as it implements the same interface.
 
 ```php
 <?php
 
 require __DIR__ . '/vendor/autoload.php';
 
-use AmraniCh\AjaxDispatcher\Http\Request;
-use AmraniCh\AjaxDispatcher\Handler\HandlerCollection;
-use AmraniCh\AjaxDispatcher\Handler\Handler;
-use AmraniCh\AjaxDispatcher\Http\Response;
-use AmraniCh\AjaxDispatcher\Router;
 use AmraniCh\AjaxDispatcher\Dispatcher;
+use AmraniCh\AjaxDispatcher\Handler\Handler;
+use AmraniCh\AjaxDispatcher\PSR7ResponseSender;
+use AmraniCh\AjaxDispatcher\Router\Router;
+use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Psr7\ServerRequest;
 
 try {
-    $request = new Request($_SERVER);
-
-    $handlers = new HandlerCollection([
-        
+    $request = ServerRequest::fromGlobals();
+    
+    $router = new Router($request, 'handler', [
+    
         // ?handler=hello&name=john
-        Handler::get('hello', function (Request $request) {
-            return Response::raw("Hello $request->name!!");
+        Handler::get('hello', function ($params) {
+            $response = new Response();
+            $response->getBody()->write("hello " . $params["name"]);
+            return $response;
         }),
     ]);
 
-    $router     = new Router($request, 'handler', $handlers);
     $dispatcher = new Dispatcher($router);
 
     $dispatcher
         ->cleanBuffer()
         ->dispatch()
         ->stop();
-
+        
 } catch (\Exception $ex) {
-    Response::json(['error' => $ex->getMessage()], $ex->getCode())->send();
+    $response = new Response(
+        $ex->getCode() ?: 500, 
+        ['Content-type' => 'application/json'], 
+        json_encode(['message' => $ex->getMessage()])
+    );
+
+    $sender = new PSR7ResponseSender($response);
+    $sender->send();
     exit();
 }
 ```
@@ -118,70 +126,6 @@ $dispatcher
     ->dispatch()
     ->stop();
 ```
-
-<hr>
-
-## Security tips for production servers
-
-### 1. Check for the request if it is an "AJAX request"
-
-```php
-if (!$request->isAjaxRequest()) {
-    Response::raw('bad request.', 400)->send();
-    exit();
-}
-```
-
-**Note :** The `isAjaxRequest` method will look for the `X-REQUESTED-WITH` header in the coming request headers, which
-obviously can be spoofed. AJAX requests can be emulated very easily and there is a sure way to know that the request is
-definitely an "AJAX request", however, it recommended doing this check.
-
-### 2. Check for your own URL
-
-If you want to add an extra layer of security to your application, you can check for the `HTTP_PREFER` header that hold
-the address of the page that the request coming from.
-
-```php
-if (!array_key_exists('HTTP_REFERER', $request->getHeaders())
-    || $request->getHeaderValue('HTTP_REFERER') !== 'https://www.yourdomain.com') {
-    Response::raw('bad request.', 400)->send();
-    exit();
-}
-```
-
-**Note :** HTTP headers can be spoofed, that means the content of the `HTTP_PREFER` header cannot be trusted.
-
-### 3. Using CRSF tokens
-
-Generate the CRSF token :
-
-```php
-session_start();
-
-if (!isset($_SESSION['CSRF_TOKEN'])) {
-    // random_bytes function introduced as of PHP 7
-    $_SESSION['CSRF_TOKEN'] = bin2hex(random_bytes(32));
-}
-```
-
-Inject the token somewhere in your page, for example in a meta tag :
-
-```html
-<meta name="csrf-token" content="<?= $_SESSION['CSRF_TOKEN'] ?>">
-```
-
-Send the token in every AJAX request that you made :
-
-```javascript
-$.ajaxSetup({
-    headers: { 'X-CSRF-TOKEN':  $('meta[name="csrf-token"]').attr('content') },
-});
-```
-
-### Complete example for production usage
-
-I already implemented all these security tips in one example, if you want to check it out see the [examples/production](examples/production) folder.
-
 <hr>
 
 ## Background
