@@ -31,8 +31,6 @@ class Handler
     const SUPPORTED_METHODS = [
         'GET',
         'POST',
-        'PUT',
-        'DELETE',
     ];
 
     /**
@@ -216,34 +214,6 @@ class Handler
     public static function post($name, $value)
     {
         return static::getInstance(['POST'], $name, $value);
-    }
-
-    /**
-     * Creates handler with PUT request method.
-     *
-     * @param string          $name
-     * @param string|callable $value
-     *
-     * @return Handler
-     * @throws InvalidArgumentException
-     */
-    public static function put($name, $value)
-    {
-        return static::getInstance(['PUT'], $name, $value);
-    }
-
-    /**
-     * Creates handler with DELETE request method.
-     *
-     * @param string          $name
-     * @param string|callable $value
-     *
-     * @return Handler
-     * @throws InvalidArgumentException
-     */
-    public static function delete($name, $value)
-    {
-        return static::getInstance(['DELETE'], $name, $value);
     }
 
     /**

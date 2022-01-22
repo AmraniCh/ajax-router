@@ -15,7 +15,7 @@ class HandlerTest extends TestCase
             ->onlyMethods([])
             ->getMock();
 
-        $methods = ['GET', 'DELETE', 'PUT'];
+        $methods = ['GET', 'POST'];
 
         $this->assertSame($handlerMock, $handlerMock->setMethods($methods));
         $this->assertSame($methods, $handlerMock->getMethods());
@@ -43,7 +43,7 @@ class HandlerTest extends TestCase
             ->onlyMethods([])
             ->getMock();
 
-        $methods = ['GET', 'POST', 'PUT', 'DELETE'];
+        $methods = ['GET', 'POST'];
 
         $handlerMock->setMethods($methods);
 
@@ -155,34 +155,6 @@ class HandlerTest extends TestCase
         $value   = 'UserController@login';
 
         $handler = Handler::post($name, $value);
-
-        $this->assertSame($methods, $handler->getMethods());
-        $this->assertSame($name, $handler->getName());
-        $this->assertSame($name, $handler->getName());
-        $this->assertSame('string', $handler->getType());
-    }
-
-    public function test_put_static(): void
-    {
-        $methods = ['PUT'];
-        $name    = 'updateUser';
-        $value   = 'UserController@updateUser';
-
-        $handler = Handler::put($name, $value);
-
-        $this->assertSame($methods, $handler->getMethods());
-        $this->assertSame($name, $handler->getName());
-        $this->assertSame($name, $handler->getName());
-        $this->assertSame('string', $handler->getType());
-    }
-
-    public function test_delete_static(): void
-    {
-        $methods = ['PUT'];
-        $name    = 'deleteUser';
-        $value   = 'UserController@deleteUser';
-
-        $handler = Handler::put($name, $value);
 
         $this->assertSame($methods, $handler->getMethods());
         $this->assertSame($name, $handler->getName());
