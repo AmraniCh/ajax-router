@@ -38,16 +38,18 @@ class Router
     /**
      * @param ServerRequestInterface $request     A request class that implement the {@see ServerRequestInterface}
      *                                            interface.
-     * @param string                 $handlerName The handler name to be executed.
-     * @param array                  $handlers    An associative array that register request handlers.
+     * @param string                 $handlerName The route name to be executed.
+     * @param array                  $routes
+     * @param array                  $controllers
      *
      * @throws InvalidArgumentException
      */
-    public function __construct(ServerRequestInterface $request, $handlerName, array $handlers)
+    public function __construct(ServerRequestInterface $request, $handlerName, array $routes, array $controllers = [])
     {
         $this->setRequest($request);
-        $this->setHandlerName($handlerName);
-        $this->setHandlers($handlers);
+        $this->setRouteVariable($handlerName);
+        $this->setRoutes($routes);
+        $this->registerControllers($controllers);
     }
 
     /**
