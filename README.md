@@ -1,13 +1,13 @@
-[![packagist](https://img.shields.io/packagist/v/AmraniCh/ajax-dispatcher?include_prereleases)](https://packagist.org/packages/amranich/ajax-dispatcher)
-![php version](https://img.shields.io/packagist/php-v/AmraniCh/ajax-dispatcher)
+[![packagist](https://img.shields.io/packagist/v/AmraniCh/ajax-router?include_prereleases)](https://packagist.org/packages/amranich/ajax-router)
+![php version](https://img.shields.io/packagist/php-v/AmraniCh/ajax-router)
 [![tests](https://github.com/AmraniCh/ajax-dispatcher/actions/workflows/tests.yml/badge.svg)](https://github.com/AmraniCh/ajax-dispatcher/actions/workflows/tests.yml)
-[![codecov](https://codecov.io/gh/AmraniCh/ajax-dispatcher/branch/master/graph/badge.svg?token=D0766BN57O)](https://codecov.io/gh/AmraniCh/ajax-dispatcher)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/AmraniCh/ajax-dispatcher/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/AmraniCh/ajax-dispatcher/?branch=master)
+[![codecov](https://codecov.io/gh/AmraniCh/ajax-router/branch/master/graph/badge.svg?token=IFIXJ78PIN)](https://codecov.io/gh/AmraniCh/ajax-router)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/AmraniCh/ajax-router/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/AmraniCh/ajax-router/?branch=master)
 
 ## Getting Started
 
 ```bash
-composer require amranich/ajax-dispatcher:v1.0.0-beta3
+composer require amranich/ajax-dispatcher
 ```
 
 You can copy/paste this code snippet for a quick start.
@@ -15,41 +15,36 @@ You can copy/paste this code snippet for a quick start.
 We're using Guzzle PSR-7 interface implementation here, but you can use any other library you like as long as it implements the same interface.
 
 ```php
-<?php
+?php
 
 require __DIR__ . '/vendor/autoload.php';
 
-use AmraniCh\AjaxDispatcher\Dispatcher;
-use AmraniCh\AjaxDispatcher\Handler\Handler;
-use AmraniCh\AjaxDispatcher\PSR7ResponseSender;
-use AmraniCh\AjaxDispatcher\Router\Router;
+use AmraniCh\AjaxRouter\Dispatcher;
+use AmraniCh\AjaxRouter\Route;
+use AmraniCh\AjaxRouter\Psr7\PSR7ResponseSender;
+use AmraniCh\AjaxRouter\Router;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\ServerRequest;
 
 try {
     $request = ServerRequest::fromGlobals();
-    
-    $router = new Router($request, 'handler', [
-    
-        // ?handler=hello&name=john
-        Handler::get('hello', function ($params) {
-            $response = new Response();
-            $response->getBody()->write("hello " . $params["name"]);
+    $router = new Router($request, 'route', [
+
+        // ?route=hello&name=john
+        Route::get('hello', function ($params) {
+            $response = new Response;
+            $response->getBody()->write("hello master " . $params["name"]);
             return $response;
         }),
     ]);
 
     $dispatcher = new Dispatcher($router);
+    $dispatcher->dispatch();
 
-    $dispatcher
-        ->cleanBuffer()
-        ->dispatch()
-        ->stop();
-        
-} catch (\Exception $ex) {
+} catch (Exception $ex) {
     $response = new Response(
-        $ex->getCode() ?: 500, 
-        ['Content-type' => 'application/json'], 
+        $ex->getCode() ?: 500,
+        ['Content-type' => 'application/json'],
         json_encode(['message' => $ex->getMessage()])
     );
 
@@ -59,20 +54,20 @@ try {
 }
 ```
 
-## Usage
+## Usage Tips
 
 ### Route to controller/class method
 
 If you like to put the business logic in a separate class or in a controller, you can route your requests to them like this :
 
 ```php
-Handler::get('getProfile', [UserManager::class, 'getProfile']),
+Route::get('getProfile', [UserManager::class, 'getProfile']),
 ```
 
 Or :
 
 ```php
-Handler::get('getProfile', 'UserManager@getProfile')
+Route::get('getProfile', 'UserManager@getProfile')
 ```
 
 But you have after to register the controller namespace/instance in the router, like this :
@@ -94,39 +89,16 @@ $router->registerControllers([
 
 ### Catch handlers exceptions
 
-*I want to catch exceptions that only occurs from my AJAX handlers, and not those thrown by the library or somewhere else, how I can
+*I want to catch exceptions that only occurs from my routes actions, and not those thrown by the library or somewhere else, how I can
 do that ?*
 
 Answer :
 
 ```php
 $dispatcher->onException(function (\Exception $ex) {
-    // $ex exception thrown by a handler
+    // $ex exception thrown by a route action
 });
 ```
-
-### Clean output buffer before calling requests handlers (Recommended)
-
-To be sure that the response (output) for the ajax request it comes only from the defined handlers, and prevent
-unexpected echos from sending their content earlier to the browser use the `cleanBuffer` method :
-
-```php
-$dispatcher
-    ->cleanBuffer()
-    ->dispatch();
-```
-
-### Exit the script after dispatching the request (Recommended)
-
-Use `stop()` to tell the dispatcher to exit the script right after the handler execution, this can be useful to ensure that the response (output)
-generated by your handlers will not be altered or modified after :
-
-```php
-$dispatcher
-    ->dispatch()
-    ->stop();
-```
-<hr>
 
 ## Background
 
