@@ -7,7 +7,7 @@
 ## Getting Started
 
 ```bash
-composer require amranich/ajax-dispatcher
+composer require amranich/ajax-router
 ```
 
 You can copy/paste this code snippet for a quick start.
