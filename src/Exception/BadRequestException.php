@@ -1,16 +1,16 @@
 <?php
 
-namespace AmraniCh\AjaxDispatcher\Exception;
+namespace AmraniCh\AjaxRouter\Exception;
 
 /**
- * AmraniCh\AjaxDispatcher\Exception\BadRequestException
+ * AmraniCh\AjaxRouter\Exception\BadRequestException
  *
  * @since  1.0.0
  * @author El Amrani Chakir <contact@amranich.dev>
  * @link   https://amranich.dev
  * @internal
  */
-class BadRequestException extends AjaxDispatcherException
+class BadRequestException extends AjaxRouterException
 {
     public function __construct($message, $code = 400)
     {

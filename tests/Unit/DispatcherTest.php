@@ -2,12 +2,9 @@
 
 declare(strict_types=1);
 
-use AmraniCh\AjaxDispatcher\Dispatcher;
-use AmraniCh\AjaxDispatcher\Http\Request;
-use AmraniCh\AjaxDispatcher\Http\Response;
-use AmraniCh\AjaxDispatcher\Router\Router;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseInterface;
+use AmraniCh\AjaxRouter\Dispatcher;
+use AmraniCh\AjaxRouter\Router;
 
 class DispatcherTest extends TestCase
 {

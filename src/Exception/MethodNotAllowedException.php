@@ -1,16 +1,16 @@
 <?php
 
-namespace AmraniCh\AjaxDispatcher\Exception;
+namespace AmraniCh\AjaxRouter\Exception;
 
 /**
- * AmraniCh\AjaxDispatcher\Exception\MethodNotAllowedException
+ * AmraniCh\AjaxRouter\Exception\MethodNotAllowedException
  *
  * @since  1.0.0
  * @author El Amrani Chakir <contact@amranich.dev>
  * @link   https://amranich.dev
  * @internal
  */
-class MethodNotAllowedException extends AjaxDispatcherException
+class MethodNotAllowedException extends AjaxRouterException
 {
 
     public function __construct($message, $code = 405, $allowedMethods = [])

@@ -1,15 +1,15 @@
 <?php
 
-namespace AmraniCh\AjaxDispatcher\Exception;
+namespace AmraniCh\AjaxRouter\Exception;
 
 /**
- * AmraniCh\AjaxDispatcher\Exception\LogicException
+ * AmraniCh\AjaxRouter\Exception\LogicException
  *
  * @since  1.0.0
  * @author El Amrani Chakir <contact@amranich.dev>
  * @link   https://amranich.dev
  */
-class LogicException extends AjaxDispatcherException
+class LogicException extends AjaxRouterException
 {
 
 }   

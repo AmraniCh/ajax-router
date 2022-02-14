@@ -1,9 +1,9 @@
 <?php
 
-namespace AmraniCh\AjaxDispatcher\Exception;
+namespace AmraniCh\AjaxRouter\Exception;
 
 /**
- * AmraniCh\AjaxDispatcher\Exception\HttpExceptionTrait
+ * AmraniCh\AjaxRouter\Exception\HttpExceptionTrait
  * 
  * This trait supports sending HTTP status codes for the next response, the status code 
  * specified when creating a new class of the exception in the second parameter, if no 
@@ -17,8 +17,6 @@ trait HttpExceptionTrait
 {
     public function __construct($message, $code, $headers = [])
     {
-        parent::__construct($message, $code);
-
         // check if the headers was already sent
         if (!empty($headers) && !headers_sent()) {
             http_response_code($code);

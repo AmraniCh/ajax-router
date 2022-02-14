@@ -1,16 +1,17 @@
 <?php
 
-namespace Tests\Unit\AjaxDispatcher\Internal;
+namespace Tests\Unit\AjaxRouter\Internal;
 
-use AmraniCh\AjaxDispatcher\Internal\PSR7RequestAdapter;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
+use Psr\Http\Message\StreamInterface;
+use Psr\Http\Message\UploadedFileInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use AmraniCh\AjaxRouter\Psr7\PSR7RequestAdapter;
 
 class PSR7RequestAdapterTest extends TestCase
 {
-    public function test_getVariables_With_JSON_Response_Content_Type(): void
+    public function test_getVariables_With_POST_Method_With_JSON_Response_Content_Type(): void
     {
         $requestMock = $this->getMockBuilder(ServerRequestInterface::class)
             ->onlyMethods([
@@ -25,12 +26,12 @@ class PSR7RequestAdapterTest extends TestCase
             ->method('getMethod')
             ->willReturn('POST');
 
-        $requestMock->expects($this->once())
+        $requestMock->expects($this->atLeastOnce())
             ->method('hasHeader')
             ->with('Content-Type')
             ->willReturn(true);
 
-        $requestMock->expects($this->once())
+        $requestMock->expects($this->atLeastOnce())
             ->method('getHeaderLine')
             ->with('Content-Type')
             ->willReturn('application/json;');
@@ -56,36 +57,37 @@ class PSR7RequestAdapterTest extends TestCase
         ]);
     }
 
-    public function test_getVariables_With_Response_Content_Type_Is_Not_JSON(): void
+    public function test_getVariables_With_POST_Method_With_Response_Urlencoded_Content_Type(): void
     {
         $requestMock = $this->getMockBuilder(ServerRequestInterface::class)
             ->onlyMethods([
                 'getMethod',
                 'hasHeader',
-                'getBody',
+                'getParsedBody',
             ])
             ->getMockForAbstractClass();
 
-        $requestMock->expects($this->once())
+        $requestMock->expects($this->atLeastOnce())
             ->method('getMethod')
             ->willReturn('POST');
 
-        $requestMock->expects($this->once())
+        $requestMock->expects($this->atLeastOnce())
             ->method('hasHeader')
             ->with('Content-Type')
-            ->willReturn(false);
+            ->willReturn(true);
 
-        $streamMock = $this->getMockBuilder(StreamInterface::class)
-            ->onlyMethods(['getContents'])
-            ->getMockForAbstractClass();
-
-        $streamMock->expects($this->once())
-            ->method('getContents')
-            ->willReturn('id=64&firstname=John&lastname=Doe');
+        $requestMock->expects($this->atLeastOnce())
+        ->method('getHeaderLine')
+        ->with('Content-Type')
+        ->willReturn('application/x-www-form-urlencoded;');
 
         $requestMock->expects($this->once())
-            ->method('getBody')
-            ->willReturn($streamMock);
+            ->method('getParsedBody')
+            ->willReturn([
+                'id'        => '64',
+                'firstname' => 'John',
+                'lastname'  => 'Doe'
+            ]);
 
         $adapter = new PSR7RequestAdapter($requestMock);
 
@@ -96,35 +98,117 @@ class PSR7RequestAdapterTest extends TestCase
         ]);
     }
 
-    public function test_getVariables_Where_HTTP_Body_Is_Empty(): void
+    public function test_getVariables_With_POST_Method_With_Response_FormData_Content_Type(): void
     {
         $requestMock = $this->getMockBuilder(ServerRequestInterface::class)
             ->onlyMethods([
                 'getMethod',
-                'getBody',
+                'hasHeader',
+                'getParsedBody',
+                'getUploadedFiles',
             ])
             ->getMockForAbstractClass();
 
-        $requestMock->expects($this->once())
+        $requestMock->expects($this->atLeastOnce())
             ->method('getMethod')
             ->willReturn('POST');
 
-        $streamMock = $this->getMockBuilder(StreamInterface::class)
-            ->onlyMethods(['getContents'])
-            ->getMockForAbstractClass();
+        $requestMock->expects($this->atLeastOnce())
+            ->method('hasHeader')
+            ->with('Content-Type')
+            ->willReturn(true);
 
-        $streamMock->expects($this->once())
-            ->method('getContents')
-            ->willReturn('');
+        $requestMock->expects($this->atLeastOnce())
+        ->method('getHeaderLine')
+        ->with('Content-Type')
+        ->willReturn('multipart/form-data;');
+
+        $parsedBody = [
+            'id'        => '64',
+            'firstname' => 'John',
+            'lastname'  => 'Doe'
+        ];
 
         $requestMock->expects($this->once())
-            ->method('getBody')
-            ->willReturn($streamMock);
+            ->method('getParsedBody')
+            ->willReturn([
+                'id'        => '64',
+                'firstname' => 'John',
+                'lastname'  => 'Doe'
+            ]);
+
+        $uploadedFiles = [$this->getMockClass(UploadedFileInterface::class)];
+
+        $requestMock->expects($this->once())
+            ->method('getUploadedFiles')
+            ->willReturn($uploadedFiles);
 
         $adapter = new PSR7RequestAdapter($requestMock);
 
-        $this->assertSame($adapter->getVariables(), []);
+        $this->assertSame([
+            'id'        => '64',
+            'firstname' => 'John',
+            'lastname'  => 'Doe',
+            $this->getMockClass(UploadedFileInterface::class)
+        ], $adapter->getVariables());
     }
+
+    public function test_getVariables_With_POST_Method_With_Response_Content_Urlencoded_Content_Type_With_Empty_Body(): void
+    {
+        $requestMock = $this->getMockBuilder(ServerRequestInterface::class)
+            ->onlyMethods([
+                'getMethod',
+                'hasHeader',
+                'getParsedBody',
+            ])
+            ->getMockForAbstractClass();
+
+        $requestMock->expects($this->atLeastOnce())
+            ->method('getMethod')
+            ->willReturn('POST');
+
+        $requestMock->expects($this->atLeastOnce())
+            ->method('hasHeader')
+            ->with('Content-Type')
+            ->willReturn(true);
+
+        $requestMock->expects($this->atLeastOnce())
+        ->method('getHeaderLine')
+        ->with('Content-Type')
+        ->willReturn('application/x-www-form-urlencoded;');
+
+        $requestMock->expects($this->once())
+            ->method('getParsedBody')
+            ->willReturn('');
+
+        $adapter = new PSR7RequestAdapter($requestMock);
+
+        $this->assertEmpty($adapter->getVariables());
+    }
+
+    public function test_getVariables_With_POST_Method_Where_Reponse_Content_Type_Header_Not_Present(): void
+    {
+        $requestMock = $this->getMockBuilder(ServerRequestInterface::class)
+            ->onlyMethods([
+                'getMethod',
+                'hasHeader',
+            ])
+            ->getMockForAbstractClass();
+
+        $requestMock->expects($this->atLeastOnce())
+            ->method('getMethod')
+            ->willReturn('POST');
+
+        $requestMock->expects($this->atLeastOnce())
+            ->method('hasHeader')
+            ->with('Content-Type')
+            ->willReturn(false);
+
+        $adapter = new PSR7RequestAdapter($requestMock);
+
+        $this->assertEmpty($adapter->getVariables());
+    }
+
     public function test_getVariables_With_Get_HTTP_Method_And_JSON_Response_Content_Type()
     {
         $requestMock = $this->getMockBuilder(ServerRequestInterface::class)

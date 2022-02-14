@@ -1,12 +1,12 @@
 <?php
 
-namespace AmraniCh\AjaxDispatcher;
+namespace AmraniCh\AjaxRouter;
 
-use AmraniCh\AjaxDispatcher\Router\Router;
 use Psr\Http\Message\ResponseInterface;
+use AmraniCh\AjaxRouter\Psr7\PSR7ResponseSender;
 
 /**
- * AmraniCh\AjaxDispatcher\Dispatcher
+ * AmraniCh\AjaxRouter\Dispatcher
  *
  * Generate the actual response for the AJAX request.
  *
@@ -21,9 +21,6 @@ class Dispatcher
 
     /** @var callable */
     protected $onExceptionCallback;
-
-    /** @var bool */
-    protected $cleanBuffer = false;
 
     /** @var PSR7ResponseSender */
     protected $sender;
@@ -65,8 +62,7 @@ class Dispatcher
     }
 
     /**
-     * Dispatches router request to an appropriate handler and execute it to generate the response for the current AJAX
-     * request.
+     * Executes the route action and generate the response.
      *
      * @return Dispatcher
      * @throws \Exception
@@ -76,10 +72,6 @@ class Dispatcher
         $handler = $this->router->run();
 
         $response = $this->handleException($handler);
-
-        if ($this->cleanBuffer && ob_get_level() > 0) {
-            ob_clean();
-        }
 
         if ($response instanceof ResponseInterface) {
             $sender = new PSR7ResponseSender($response);
@@ -94,7 +86,7 @@ class Dispatcher
     }
 
     /**
-     * Allows to use a custom exception handler for exceptions may throw when calling the handlers.
+     * Allows using a custom exception handler for exceptions that may throw when calling the route actions.
      *
      * @param callable $callable a callback function that will accept the exception as a first argument.
      *
