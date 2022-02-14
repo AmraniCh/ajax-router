@@ -1,6 +1,6 @@
 {
-    "name": "amranich/ajax-dispatcher",
-    "description": "Handle AJAX requests and send them to an appropriate handler",
+    "name": "amranich/ajax-router",
+    "description": "Handle your AJAX requests efficiently",
     "keywords": [
         "dispatcher",
         "router",
@@ -28,12 +28,7 @@
     },
     "autoload": {
         "psr-4": {
-            "AmraniCh\\AjaxDispatcher\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Tests\\Unit\\AjaxDispatcher\\": "tests/Unit"
+            "AmraniCh\\AjaxRouter\\": "src/"
         }
     },
     "config": {
