@@ -131,16 +131,14 @@ class Dispatcher
      */
     protected function handleException(\Closure $callback)
     {
+        if (!is_callable($this->onExceptionCallback)) {
+            return $callback();
+        }
+
         try {
             return $callback();
         } catch (\Exception $ex) {
-            if (is_callable($this->onExceptionCallback)) {
-                call_user_func($this->onExceptionCallback, $ex);
-                return false;
-            }
-
-            $class = get_class($ex);
-            throw new $class($ex->getMessage());
+            return call_user_func($this->onExceptionCallback, $ex);
         }
     }
 }
