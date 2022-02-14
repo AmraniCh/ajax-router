@@ -100,29 +100,7 @@ class Dispatcher
     }
 
     /**
-     * Tells the dispatcher to exit the script directly after executing the AJAX handler.
-     *
-     * @return void
-     */
-    public function stop()
-    {
-        exit();
-    }
-
-    /**
-     * Tells the dispatcher to clean the output buffer (if is active) before dispatching the request.
-     *
-     * @return Dispatcher
-     */
-    public function cleanBuffer()
-    {
-        $this->cleanBuffer = true;
-
-        return $this;
-    }
-
-    /**
-     * handle exceptions that may thrown during the callback call.
+     * handle exceptions that may be thrown during the callback call.
      *
      * @param \Closure $callback
      *
