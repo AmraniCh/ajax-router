@@ -12,7 +12,7 @@ use Psr\Http\Message\ServerRequestInterface;
  * @link   https://amranich.dev
  * @internal
  */
-class PSR7RequestAdapter
+class Psr7RequestAdapter
 {
     /** @var ServerRequestInterface */
     protected $request;

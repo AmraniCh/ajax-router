@@ -2,14 +2,14 @@
 
 namespace Tests\Unit\AjaxRouter\Internal;
 
+use AmraniCh\AjaxRouter\Psr7\Psr7RequestAdapter;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\UriInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use AmraniCh\AjaxRouter\Psr7\PSR7RequestAdapter;
+use Psr\Http\Message\UriInterface;
 
-class PSR7RequestAdapterTest extends TestCase
+class Psr7RequestAdapterTest extends TestCase
 {
     public function test_getVariables_With_POST_Method_With_JSON_Response_Content_Type(): void
     {
@@ -48,12 +48,12 @@ class PSR7RequestAdapterTest extends TestCase
             ->method('getBody')
             ->willReturn($streamMock);
 
-        $adapter = new PSR7RequestAdapter($requestMock);
+        $adapter = new Psr7RequestAdapter($requestMock);
 
         $this->assertSame($adapter->getVariables(), [
-            'id'        => 64,
+            'id' => 64,
             'firstname' => 'John',
-            'lastname'  => 'Doe'
+            'lastname' => 'Doe'
         ]);
     }
 
@@ -77,24 +77,24 @@ class PSR7RequestAdapterTest extends TestCase
             ->willReturn(true);
 
         $requestMock->expects($this->atLeastOnce())
-        ->method('getHeaderLine')
-        ->with('Content-Type')
-        ->willReturn('application/x-www-form-urlencoded;');
+            ->method('getHeaderLine')
+            ->with('Content-Type')
+            ->willReturn('application/x-www-form-urlencoded;');
 
         $requestMock->expects($this->once())
             ->method('getParsedBody')
             ->willReturn([
-                'id'        => '64',
+                'id' => '64',
                 'firstname' => 'John',
-                'lastname'  => 'Doe'
+                'lastname' => 'Doe'
             ]);
 
-        $adapter = new PSR7RequestAdapter($requestMock);
+        $adapter = new Psr7RequestAdapter($requestMock);
 
         $this->assertSame($adapter->getVariables(), [
-            'id'        => '64',
+            'id' => '64',
             'firstname' => 'John',
-            'lastname'  => 'Doe'
+            'lastname' => 'Doe'
         ]);
     }
 
@@ -119,22 +119,22 @@ class PSR7RequestAdapterTest extends TestCase
             ->willReturn(true);
 
         $requestMock->expects($this->atLeastOnce())
-        ->method('getHeaderLine')
-        ->with('Content-Type')
-        ->willReturn('multipart/form-data;');
+            ->method('getHeaderLine')
+            ->with('Content-Type')
+            ->willReturn('multipart/form-data;');
 
         $parsedBody = [
-            'id'        => '64',
+            'id' => '64',
             'firstname' => 'John',
-            'lastname'  => 'Doe'
+            'lastname' => 'Doe'
         ];
 
         $requestMock->expects($this->once())
             ->method('getParsedBody')
             ->willReturn([
-                'id'        => '64',
+                'id' => '64',
                 'firstname' => 'John',
-                'lastname'  => 'Doe'
+                'lastname' => 'Doe'
             ]);
 
         $uploadedFiles = [$this->getMockClass(UploadedFileInterface::class)];
@@ -143,12 +143,12 @@ class PSR7RequestAdapterTest extends TestCase
             ->method('getUploadedFiles')
             ->willReturn($uploadedFiles);
 
-        $adapter = new PSR7RequestAdapter($requestMock);
+        $adapter = new Psr7RequestAdapter($requestMock);
 
         $this->assertSame([
-            'id'        => '64',
+            'id' => '64',
             'firstname' => 'John',
-            'lastname'  => 'Doe',
+            'lastname' => 'Doe',
             $this->getMockClass(UploadedFileInterface::class)
         ], $adapter->getVariables());
     }
@@ -173,15 +173,15 @@ class PSR7RequestAdapterTest extends TestCase
             ->willReturn(true);
 
         $requestMock->expects($this->atLeastOnce())
-        ->method('getHeaderLine')
-        ->with('Content-Type')
-        ->willReturn('application/x-www-form-urlencoded;');
+            ->method('getHeaderLine')
+            ->with('Content-Type')
+            ->willReturn('application/x-www-form-urlencoded;');
 
         $requestMock->expects($this->once())
             ->method('getParsedBody')
             ->willReturn('');
 
-        $adapter = new PSR7RequestAdapter($requestMock);
+        $adapter = new Psr7RequestAdapter($requestMock);
 
         $this->assertEmpty($adapter->getVariables());
     }
@@ -204,7 +204,7 @@ class PSR7RequestAdapterTest extends TestCase
             ->with('Content-Type')
             ->willReturn(false);
 
-        $adapter = new PSR7RequestAdapter($requestMock);
+        $adapter = new Psr7RequestAdapter($requestMock);
 
         $this->assertEmpty($adapter->getVariables());
     }
@@ -245,12 +245,12 @@ class PSR7RequestAdapterTest extends TestCase
             ->method('getUri')
             ->willReturn($uriInterfaceMock);
 
-        $adapter = new PSR7RequestAdapter($requestMock);
+        $adapter = new Psr7RequestAdapter($requestMock);
 
         $this->assertSame($adapter->getVariables(), [
-            'id'        => 64,
+            'id' => 64,
             'firstname' => 'John',
-            'lastname'  => 'Doe'
+            'lastname' => 'Doe'
         ]);
     }
 
@@ -290,12 +290,12 @@ class PSR7RequestAdapterTest extends TestCase
             ->method('getUri')
             ->willReturn($uriInterfaceMock);
 
-        $adapter = new PSR7RequestAdapter($requestMock);
+        $adapter = new Psr7RequestAdapter($requestMock);
 
         $this->assertSame($adapter->getVariables(), [
-            'id'        => 64,
+            'id' => 64,
             'firstname' => 'John',
-            'lastname'  => 'Doe'
+            'lastname' => 'Doe'
         ]);
     }
 }

@@ -2,8 +2,8 @@
 
 namespace AmraniCh\AjaxRouter;
 
+use Lazzard\Psr7ResponseSender\Sender;
 use Psr\Http\Message\ResponseInterface;
-use AmraniCh\AjaxRouter\Psr7\PSR7ResponseSender;
 
 /**
  * AmraniCh\AjaxRouter\Dispatcher
@@ -11,8 +11,8 @@ use AmraniCh\AjaxRouter\Psr7\PSR7ResponseSender;
  * Generate the actual response for the AJAX request.
  *
  * @since  1.0.0
- * @author El Amrani Chakir <contact@amranich.dev>
  * @link   https://amranich.dev
+ * @author El Amrani Chakir <contact@amranich.dev>
  */
 class Dispatcher
 {
@@ -21,9 +21,6 @@ class Dispatcher
 
     /** @var callable */
     protected $onExceptionCallback;
-
-    /** @var PSR7ResponseSender */
-    protected $sender;
 
     /**
      * @param Router $router
@@ -74,8 +71,8 @@ class Dispatcher
         $response = $this->handleException($handler);
 
         if ($response instanceof ResponseInterface) {
-            $sender = new PSR7ResponseSender($response);
-            $sender->send();
+            $sender = new Sender;
+            $sender($response);
         }
 
         if (is_string($response)) {
