@@ -93,6 +93,8 @@ class ControllerMethod
             );
         }
 
+       //var_dump(array_values($args));exit;
+
         $callable = [
             is_string($this->class) ? new $this->class() : $this->class,
             $this->name

@@ -129,12 +129,10 @@ class Route
      */
     public function setValue($value)
     {
-        $type = gettype($value);
-
-        if ($type !== 'string' && !is_callable($value)) {
+        if (!is_string($value) && !is_array($value) && !is_callable($value)) {
             throw new InvalidArgumentException(sprintf(
-                "A route value type must be either a string/callable, giving '%s' for route with name '%s'",
-                $type,
+                "A route value type must be either a string/array, giving '%s' for route with name '%s'",
+                gettype($value),
                 $this->getName()
             ));
         }
@@ -142,20 +140,6 @@ class Route
         $this->value = $value;
 
         return $this;
-    }
-
-    /**
-     * Gets route value type.
-     * 
-     * @return string
-     */
-    public function getType()
-    {
-        if (is_callable($this->value)) {
-            return 'callable';
-        }
-
-        return gettype($this->value);
     }
 
     /**

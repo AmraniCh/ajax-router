@@ -2,31 +2,24 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\AjaxRouter\Router;
-
 use PHPUnit\Framework\TestCase;
 use AmraniCh\AjaxRouter\Route;
 use Psr\Http\Message\ServerRequestInterface;
-use AmraniCh\AjaxRouter\Exception\LogicException;
 use AmraniCh\AjaxRouter\RouteResolver\RouteResolver;
 use AmraniCh\AjaxRouter\Exception\UnexpectedValueException;
 
 class RouteResolverTest extends TestCase
 {
-    public function test_resolve_With_String_Handler_Type(): void
+    public function test_resolve_With_String_Route_Type(): void
     {
         $routeMock = $this->getMockBuilder(Route::class)
             ->disableOriginalConstructor()
-            ->onlyMethods(['getValue', 'getType'])
+            ->onlyMethods(['getValue'])
             ->getMock();
 
         $routeMock->expects($this->once())
             ->method('getValue')
             ->willReturn('PostController@getPosts');
-
-        $routeMock->expects($this->once())
-            ->method('getType')
-            ->willReturn('string');
 
         $handlerResolverMock = $this->getMockBuilder(RouteResolver::class)
             ->disableOriginalConstructor()
@@ -42,38 +35,31 @@ class RouteResolverTest extends TestCase
         $this->assertInstanceOf(\Closure::class, $handlerResolverMock->resolve($routeMock));
     }
 
-    public function test_resolve_With_Closure_Handler_Type(): void
+    public function test_resolve_With_Array_Route_Type(): void
     {
-        $closure = function () {
-        };
-
         $routeMock = $this->getMockBuilder(Route::class)
             ->disableOriginalConstructor()
-            ->onlyMethods(['getValue', 'getType'])
+            ->onlyMethods(['getValue'])
             ->getMock();
 
         $routeMock->expects($this->once())
             ->method('getValue')
-            ->willReturn($closure);
-
-        $routeMock->expects($this->once())
-            ->method('getType')
-            ->willReturn('callable');
+            ->willReturn([\stdClass::class, 'login']);
 
         $handlerResolverMock = $this->getMockBuilder(RouteResolver::class)
             ->disableOriginalConstructor()
-            ->onlyMethods(['resolveCallable'])
+            ->onlyMethods(['resolveArray'])
             ->getMock();
 
         $handlerResolverMock->expects($this->once())
-            ->method('resolveCallable')
-            ->with($closure)
-            ->willReturn($closure);
+            ->method('resolveArray')
+            ->with([\stdClass::class, 'login'])
+            ->willReturn(function () {});
 
         $this->assertInstanceOf(\Closure::class, $handlerResolverMock->resolve($routeMock));
     }
 
-    public function test_resolve_With_Callable_array_Handler_Type(): void
+    public function test_resolve_With_Callable_array_Route_Type(): void
     {
         $class = $this->getMockBuilder(\stdClass::class)
             ->addMethods(['foo'])
@@ -83,24 +69,20 @@ class RouteResolverTest extends TestCase
 
         $routeMock = $this->getMockBuilder(Route::class)
             ->disableOriginalConstructor()
-            ->onlyMethods(['getValue', 'getType'])
+            ->onlyMethods(['getValue'])
             ->getMock();
 
         $routeMock->expects($this->once())
             ->method('getValue')
             ->willReturn($callable);
 
-        $routeMock->expects($this->once())
-            ->method('getType')
-            ->willReturn('callable');
-
         $handlerResolverMock = $this->getMockBuilder(RouteResolver::class)
             ->disableOriginalConstructor()
-            ->onlyMethods(['resolveCallable'])
+            ->onlyMethods(['resolveArray'])
             ->getMock();
 
         $handlerResolverMock->expects($this->once())
-            ->method('resolveCallable')
+            ->method('resolveArray')
             ->with($callable)
             ->willReturn(function () {
             });
@@ -108,20 +90,16 @@ class RouteResolverTest extends TestCase
         $this->assertIsCallable($handlerResolverMock->resolve($routeMock));
     }
 
-    public function test_resolve_With_Invalid_Handler_Type(): void
+    public function test_resolve_With_Invalid_Route_Type(): void
     {
         $routeMock = $this->getMockBuilder(Route::class)
             ->disableOriginalConstructor()
-            ->onlyMethods(['getValue', 'getType'])
+            ->onlyMethods(['getValue'])
             ->getMock();
 
         $routeMock->expects($this->once())
             ->method('getValue')
-            ->willReturn(['CommentsController@getCommentByID']);
-
-        $routeMock->expects($this->once())
-            ->method('getType')
-            ->willReturn('array');
+            ->willReturn(new \stdClass());
 
         $handlerResolverMock = $this->getMockBuilder(RouteResolver::class)
             ->disableOriginalConstructor()
@@ -132,42 +110,6 @@ class RouteResolverTest extends TestCase
         $this->expectExceptionCode(500);
 
         $this->assertIsCallable($handlerResolverMock->resolve($routeMock));
-    }
-
-    public function test_getCallableMethod_Where_Controller_Class_Not_Exists(): void
-    {
-        $handlerResolverMock = $this->getMockBuilder(RouteResolver::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['getRegisteredControllerByName'])
-            ->getMock();
-
-        $handlerResolverMock->expects($this->once())
-            ->method('getRegisteredControllerByName')
-            ->willReturn(null);
-
-        $this->expectException(LogicException::class);
-        $this->expectExceptionCode(500);
-
-        $method = $this->getReflectedMethod('getCallableMethod');
-
-        $method->invoke($handlerResolverMock, 'MyController@foo');
-    }
-
-    public function test_getCallableMethod_Where_Controller_Class_Exists(): void
-    {
-        $handlerResolverMock = $this->getMockBuilder(RouteResolver::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['getRegisteredControllerByName'])
-            ->getMock();
-
-        $handlerResolverMock->expects($this->once())
-            ->method('getRegisteredControllerByName')
-            ->with('App\MyController')
-            ->willReturn('MyController');
-
-        $method = $this->getReflectedMethod('getCallableMethod');
-
-        $this->assertInstanceOf(\Closure::class, $method->invoke($handlerResolverMock, 'App\MyController@foo'));
     }
 
     public function test_getRegisteredControllerByName_Where_Controller_Is_Registered(): void

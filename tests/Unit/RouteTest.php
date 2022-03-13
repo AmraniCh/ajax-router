@@ -110,32 +110,7 @@ class RouteTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionCode(500);
 
-        $routeMock->setValue(['CommmentController@addComment']);
-    }
-
-    public function test_getType_with_callable(): void
-    {
-        $routeMock = $this->getMockBuilder(Route::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods([])
-            ->getMock();
-
-        $routeMock->setValue(function () {
-        });
-
-        $this->assertSame('callable', $routeMock->getType());
-    }
-
-    public function test_getType_with_string(): void
-    {
-        $routeMock = $this->getMockBuilder(Route::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods([])
-            ->getMock();
-
-        $routeMock->setValue('CommmentController@addComment');
-
-        $this->assertSame('string', $routeMock->getType());
+        $routeMock->setValue(new \stdClass);
     }
 
     public function test_get_static(): void
@@ -149,7 +124,6 @@ class RouteTest extends TestCase
         $this->assertSame($methods, $route->getMethods());
         $this->assertSame($name, $route->getName());
         $this->assertSame($name, $route->getName());
-        $this->assertSame('string', $route->getType());
     }
 
     public function test_post_static(): void
@@ -163,7 +137,6 @@ class RouteTest extends TestCase
         $this->assertSame($methods, $route->getMethods());
         $this->assertSame($name, $route->getName());
         $this->assertSame($name, $route->getName());
-        $this->assertSame('string', $route->getType());
     }
 
     public function test_many_static(): void
@@ -177,6 +150,5 @@ class RouteTest extends TestCase
         $this->assertSame($methods, $route->getMethods());
         $this->assertSame($name, $route->getName());
         $this->assertSame($name, $route->getName());
-        $this->assertSame('string', $route->getType());
     }
 }

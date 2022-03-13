@@ -48,14 +48,13 @@ class RouteResolver
     public function resolve(Route $route)
     {
         $value = $route->getValue();
-        $type = $route->getType();
 
-        if ($type === 'string') {
+        if (is_string($value)) {
             return $this->resolveString($value);
         }
 
-        if ($type === 'callable') {
-            return $this->resolveCallable($value);
+        if (is_array($value)) {
+            return $this->resolveArray($value);
         }
 
         throw new UnexpectedValueException(sprintf(
@@ -74,8 +73,19 @@ class RouteResolver
      */
     protected function resolveString($string)
     {
-        $method = $this->getCallableMethod($string);
-        return function () use ($method, $string) {
+        $tokens = @explode('@', $string);
+        $controller = $tokens[0];
+        $method = $tokens[1];
+
+        $registeredController = $this->getRegisteredControllerByName($controller);
+
+        if (!$registeredController) {
+            throw new LogicException("Controller class '$controller' not registered.");
+        }
+
+        $method = $this->getCallableMethod($registeredController, $method);
+
+        return function () use ($method) {
             return call_user_func($method, [$this->variables, $this->request]);
         };
     }
@@ -83,14 +93,16 @@ class RouteResolver
     /**
      * Resolve routes values that defined as a callback functions.
      *
-     * @param callable $callback
+     * @param array $array
      *
      * @return \Closure
      */
-    protected function resolveCallable($callback)
+    protected function resolveArray(array $array)
     {
-        return function () use ($callback) {
-            return call_user_func($callback, $this->variables, $this->request);
+        $method = $this->getCallableMethod(new $array[0], $array[1]);
+
+        return function () use ($method) {
+            return call_user_func($method, [$this->variables, $this->request]);
         };
     }
 
@@ -98,24 +110,14 @@ class RouteResolver
      * Extract the controller and method from the giving string and return
      * the callable method from the controller object.
      *
-     * @param string $string
+     * @param string $controller
+     * @param string $method
      *
      * @return \Closure
-     * @throws LogicException
      */
-    protected function getCallableMethod($string)
+    protected function getCallableMethod($controller, $method)
     {
-        $tokens = @explode('@', $string);
-
-        $controllerName = $tokens[0];
-        $controller = $this->getRegisteredControllerByName($controllerName);
-
-        if (is_null($controller)) {
-            throw new LogicException("Controller '$controllerName' not registered.");
-        }
-
-        $methodName = $tokens[1];
-        $method = new ControllerMethod($controller, $methodName);
+        $method = new ControllerMethod($controller, $method);
 
         return function ($args = []) use ($method) {
             return $method->call($args);
