@@ -3,7 +3,7 @@
 [![tests](https://github.com/AmraniCh/ajax-dispatcher/actions/workflows/tests.yml/badge.svg)](https://github.com/AmraniCh/ajax-dispatcher/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/gh/AmraniCh/ajax-router/branch/master/graph/badge.svg?token=IFIXJ78PIN)](https://codecov.io/gh/AmraniCh/ajax-router)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/AmraniCh/ajax-router/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/AmraniCh/ajax-router/?branch=master)
-![License](https://img.shields.io/packagist/l/AmraniCh/ajax-router?color=red)
+![License](https://img.shields.io/packagist/l/AmraniCh/ajax-router)
 
 
 ## Getting Started
@@ -69,20 +69,17 @@ try {
 If you like to put the business logic in a separate class or in a controller, you can route your requests to them like this :
 
 ```php
-Route::get('getProfile', [UserManager::class, 'getProfile']),
+Route::get('getPost', [PostController::class, 'getPost']);
 ```
 
 Or :
 
 ```php
-Route::get('getProfile', 'UserManager@getProfile')
-```
+Route::get('getPost', 'PostController@getPost');
 
-But you have after to register the controller namespace/instance in the router, like this :
-
-```php
+// register the controller class or instance in the router
 $router->registerControllers([
-    UserManager::class,
+    PostController::class,
 ]);
 ```
 
@@ -91,7 +88,7 @@ controller on yourself :
 
 ```php
 $router->registerControllers([
-    new UserManager($dependencyOne, $dependencyTwo)
+    new PostController($dependencyOne, $dependencyTwo)
 ]);
 ```
 
