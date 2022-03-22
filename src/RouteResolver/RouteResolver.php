@@ -10,7 +10,7 @@ use AmraniCh\AjaxRouter\Exception\UnexpectedValueException;
 /**
  * AmraniCh\AjaxRouter\RouteResolver\RouteResolver
  *
- * Resolve routes.
+ * Resolve routes actions.
  *
  * @since  1.0.0
  * @author El Amrani Chakir <contact@amranich.dev>
@@ -57,8 +57,12 @@ class RouteResolver
             return $this->resolveArray($value);
         }
 
+        if ($value instanceof \Closure) {
+            return $this->resolveFunction($value);
+        }
+
         throw new UnexpectedValueException(sprintf(
-            "Unexpected handler value, expecting string/callable '%s' given.",
+            "Unexpected handler value, expecting string/array/function '%s' given.",
             gettype($route)
         ));
     }
@@ -74,6 +78,7 @@ class RouteResolver
     protected function resolveString($string)
     {
         $tokens = @explode('@', $string);
+        
         $controller = $tokens[0];
         $method = $tokens[1];
 
@@ -91,7 +96,7 @@ class RouteResolver
     }
 
     /**
-     * Resolve routes values that defined as a callback functions.
+     * Resolve routes actions that defined as an array of class and method name.
      *
      * @param array $array
      *
@@ -99,17 +104,27 @@ class RouteResolver
      */
     protected function resolveArray(array $array)
     {
-        $method = $this->getCallableMethod(new $array[0], $array[1]);
-
+        $method = $this->getCallableMethod($array[0], $array[1]);
         return function () use ($method) {
             return call_user_func($method, [$this->variables, $this->request]);
         };
     }
 
     /**
-     * Extract the controller and method from the giving string and return
-     * the callable method from the controller object.
+     * Resolve routes actions that defined a functions.
      *
+     * @param array $array
+     *
+     * @return \Closure
+     */
+    protected function resolveFunction($function)
+    {
+        return function () use ($function) {
+            return call_user_func($function, $this->variables, $this->request);
+        };
+    }
+
+    /**
      * @param string $controller
      * @param string $method
      *
