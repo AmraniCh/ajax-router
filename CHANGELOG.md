@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.0.5 (2022-03-22)
+
+* Fixed resolving routes actions that defined as a functions.
+
 ## 1.0.4 (2022-03-13)
 
 * Fixed compatibility issues with PHP ^8.0 versions.
