@@ -3,7 +3,7 @@
 namespace AmraniCh\AjaxRouter;
 
 use Psr\Http\Message\ServerRequestInterface;
-use AmraniCh\AjaxRouter\Psr7\PSR7RequestAdapter;
+use AmraniCh\AjaxRouter\Psr7\Psr7RequestAdapter;
 use AmraniCh\AjaxRouter\Exception\LogicException;
 use AmraniCh\AjaxRouter\RouteResolver\RouteResolver;
 use AmraniCh\AjaxRouter\Exception\BadRequestException;
