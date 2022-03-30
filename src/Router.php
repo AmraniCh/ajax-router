@@ -153,7 +153,7 @@ class Router
      */
     public function run()
     {
-        $request = new PSR7RequestAdapter($this->request);
+        $request = new Psr7RequestAdapter($this->request);
         $variables = $request->getVariables();
 
         if (!array_key_exists($this->routeVariable, $variables)) {
