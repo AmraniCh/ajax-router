@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.0.6 (2022-03-31)
+
+* Allows getting the current route via `Route::getCurrentRoute`.
+
 ## 1.0.5 (2022-03-22)
 
 * Fixed resolving routes actions that defined as a functions.
