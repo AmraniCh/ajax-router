@@ -14,6 +14,9 @@ use AmraniCh\AjaxRouter\Exception\InvalidArgumentException;
  */
 class Route
 {
+    /** @var Route */
+    protected static $currentRoute;
+
     /** @var array */
     protected $methods;
 
@@ -171,6 +174,24 @@ class Route
         }
 
         return $content;
+    }
+
+    /**
+     * @param Route $route
+     * 
+     * @return void
+     */
+    public static function setCurrentRoute(Route $route)
+    {
+        self::$currentRoute = $route;
+    }
+
+    /**
+     * @return Route
+     */
+    public static function getCurrentRoute()
+    {
+        return static::$currentRoute;
     }
 
     /**

@@ -182,6 +182,8 @@ class Router
                 ), 405, $route->getMethods());
             }
 
+            Route::setCurrentRoute($route);
+
             $resolver = new RouteResolver(
                 $this->getRequest(),
                 $variables,

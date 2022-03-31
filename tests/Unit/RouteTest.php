@@ -151,4 +151,12 @@ class RouteTest extends TestCase
         $this->assertSame($name, $route->getName());
         $this->assertSame($name, $route->getName());
     }
+
+    public function test_setCurrentRoute(): void
+    {
+        $route = $this->createMock(Route::class);
+
+        $this->assertNull(Route::setCurrentRoute($route));
+        $this->assertSame($route, Route::getCurrentRoute($route));
+    }
 }
