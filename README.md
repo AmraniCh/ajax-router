@@ -1,8 +1,5 @@
 [![packagist](https://img.shields.io/packagist/v/AmraniCh/ajax-router?include_prereleases)](https://packagist.org/packages/amranich/ajax-router)
-![php version](https://img.shields.io/packagist/php-v/AmraniCh/ajax-router)
 [![tests](https://github.com/AmraniCh/ajax-dispatcher/actions/workflows/tests.yml/badge.svg)](https://github.com/AmraniCh/ajax-dispatcher/actions/workflows/tests.yml)
-[![codecov](https://codecov.io/gh/AmraniCh/ajax-router/branch/master/graph/badge.svg?token=IFIXJ78PIN)](https://codecov.io/gh/AmraniCh/ajax-router)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/AmraniCh/ajax-router/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/AmraniCh/ajax-router/?branch=master)
 ![License](https://img.shields.io/packagist/l/AmraniCh/ajax-router)
 
 
@@ -21,19 +18,37 @@ We're using [Guzzle PSR-7 interface implementation](https://github.com/guzzle/ps
 
 require __DIR__ . '/vendor/autoload.php';
 
-use GuzzleHttp\Psr7\ServerRequest;
-use AmraniCh\AjaxRouter\Router;
-use AmraniCh\AjaxRouter\Route;
-use AmraniCh\AjaxRouter\Dispatcher;
+use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
+use AmraniCh\AjaxRouter\Route;
+use AmraniCh\AjaxRouter\Router;
+use AmraniCh\AjaxRouter\Dispatcher;
+use GuzzleHttp\Psr7\ServerRequest;
 use Lazzard\Psr7ResponseSender\Sender;
 
 try {
     $request = ServerRequest::fromGlobals();
+    
+    // the 'X-requested-with' header is commonly used to inform the server that a request 
+    // is sent via the XMLHttpRequest object on the client-side, a lot of JavaScript libraries 
+    // like jQuery already send this header automatically, this check can add a small security
+    // layer to your app because HTTP headers can be spoofed very easily, so don't count on
+    // only that check.
+    if (!$request->hasHeader('X-requested-with') 
+        || strtolower($request->getHeader('X-requested-with')[0]) !== 'XMLHttpRequest') {
+        throw new BadRequestException("Accept only AJAX requests.");
+    }
+    
+    // to organize your project, you can put your routes in a separate file like in an array
+    // and require it in the second parameter of the router constructor.  
     $router = new Router($request, 'route', [
-
+    
         // ?route=getPost&id=1005
         Route::get('getPost', function ($params) {
+        
+            // PSR7 responses are a little annoying to work with, you always have extra HTTP layers 
+            // in your app that extend the base PSR7 response class, think of a class like JsonResponse, 
+            // and in the constructor add the content-type header and pass it to the parent class.
             $response = new Response;
 
             $response->getBody()->write(json_encode([
@@ -105,19 +120,23 @@ $dispatcher->onException(function (\Exception $ex) {
 });
 ```
 
+### Get current route
+
+You can access the current route object using the static method `getCurrentRoute` of the `Route` class.
+
+```php
+$route = Router::getCurrentRoute();
+$route->getName();
+$route->getMethods();
+$route->getValue();
+
+```
+
 ## Background
 
-The idea of the library came to my mind a long time ago when I was mostly developing web applications using just plain
-PHP, some of these applications were performing a lot of AJAX requests into a single PHP file, that file can have a hundred
-lines of code that process these requests depending on a function/method name that sent along with the request,
-so I started to think of what I can do to improve the way that these requests are handled to improve readability
-and maintainability of the code.
+The idea of the library came to my mind a long time ago when I was mostly developing web applications using just plain PHP, some of these applications were performing a lot of AJAX requests into a single PHP file, that file can have a hundred lines of code that process these requests depending on a function/method name that sent along with the request, so I started to think of what I can do to improve the way that these requests are handled, and improve the code readability and maintainability.
 
 ## They support me
 
 <img width="150px" src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_square.png"/>
 
-## LICENSE
-
-The library is licensed under the open
-source [MIT licence](https://github.com/AmraniCh/ajax-router/blob/master/LICENSE).
