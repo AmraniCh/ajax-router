@@ -136,7 +136,18 @@ $route->getValue();
 
 The idea of the library came to my mind a long time ago when I was mostly developing web applications using just plain PHP, some of these applications were performing a lot of AJAX requests into a single PHP file, that file can have a hundred lines of code that process these requests depending on a function/method name that sent along with the request, so I started to think of what I can do to improve the way that these requests are handled, and improve the code readability and maintainability.
 
-## They support me
+## Prizes
+
+This package wins the PHP Innovation Award (February 2022) Issued by phpclasses.org 
+
+🏆 Prize :
+One elePHPant mascot.
+https://www.php.net/elephpant.php
+
+📜 Certificate :
+https://amranich.dev/certs/phpclasses-february-2022-innovation-award.pdf
+
+## They support this project
 
 <img width="150px" src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_square.png"/>
 
