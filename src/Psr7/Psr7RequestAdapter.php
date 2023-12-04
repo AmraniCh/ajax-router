@@ -36,7 +36,7 @@ class Psr7RequestAdapter
             return $this->getUriQueryVariables();
         }
 
-        return $this->getBodyVariables();
+        return array_merge($this->getBodyVariables(), $this->getUriQueryVariables());
     }
 
     /**
