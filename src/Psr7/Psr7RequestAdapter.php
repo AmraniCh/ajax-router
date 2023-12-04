@@ -47,7 +47,7 @@ class Psr7RequestAdapter
         if ($this->isJsonContentType()) {
             // because of the content passed in the URL we need to decode it
             $query = urldecode($this->request->getUri()->getQuery());
-            return json_decode($query, true);
+            return json_decode($query, true) ?: [];
         }
 
         return $this->request->getQueryParams();
