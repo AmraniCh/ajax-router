@@ -138,7 +138,7 @@ The idea of the library came to my mind a long time ago when I was mostly develo
 
 ## 🏆 Prize
 
-This package wins the PHP Innovation Award (February 2022) Issued by phpclasses.org.
+This package won the PHP Innovation Award (February 2022) Issued by phpclasses.org.
 
 Certificate :
 [https://amranich.dev/certs/phpclasses-february-2022-innovation-award.pdf](https://doc.amranich.dev/phpclasses-february-2022-innovation-award.pdf)
